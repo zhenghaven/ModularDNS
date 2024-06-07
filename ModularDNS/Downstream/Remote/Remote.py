@@ -8,8 +8,16 @@
 ###
 
 
-from .Downstream.TestHosts import TestHosts
-from .Downstream.TestEndpoint import TestEndpoint
-from .Downstream.TestStackDepth import TestStackDepth
-from .Downstream.TestRemoteUDP import TestRemoteUDP
+from ..QuickLookup import QuickLookup
+
+
+DEFAULT_TIMEOUT: float = 2.0
+
+
+class Remote(QuickLookup):
+
+	def __init__(self, timeout: float = DEFAULT_TIMEOUT) -> None:
+		super(Remote, self).__init__()
+
+		self.timeout = timeout
 

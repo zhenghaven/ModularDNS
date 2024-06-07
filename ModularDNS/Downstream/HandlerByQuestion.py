@@ -25,6 +25,7 @@ class HandlerByQuestion(DownstreamHandler):
 		self,
 		msgEntry: QuestionEntry.QuestionEntry,
 		senderAddr: Tuple[str, int],
+		recDepthStack: List[ Tuple[ int, str ] ],
 	) -> List[ MsgEntry.MsgEntry ]:
 		raise NotImplementedError(
 			'HandlerByQuestion.Handle() is not implemented'
@@ -34,12 +35,22 @@ class HandlerByQuestion(DownstreamHandler):
 		self,
 		dnsMsg: dns.message.Message,
 		senderAddr: Tuple[str, int],
+		recDepthStack: List[ Tuple[ int, str ] ],
 	) -> dns.message.Message:
+		newRecStack = self.CheckRecursionDepth(
+			recDepthStack,
+			self.Handle
+		)
+
 		questionList = QuestionEntry.QuestionEntry.FromRRSetList(dnsMsg.question)
 
 		respEntries = []
 		for q in questionList:
-			respEntries += self.HandleQuestion(q, senderAddr)
+			respEntries += self.HandleQuestion(
+				msgEntry=q,
+				senderAddr=senderAddr,
+				recDepthStack=newRecStack
+			)
 
 		respMsg = dns.message.make_response(dnsMsg)
 		MsgEntry.ConcatDNSMsg(respMsg, respEntries)

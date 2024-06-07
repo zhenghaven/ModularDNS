@@ -140,50 +140,50 @@ class TestEndpoint(unittest.TestCase):
 		# ipv4
 		ep = Endpoint.FromURI(uri='https://192.168.1.1', resolver=hosts)
 		self.assertEqual(ep.proto, 'https')
-		self.assertEqual(ep.GetIPAddr(), ipaddress.ip_address('192.168.1.1'))
+		self.assertEqual(ep.GetIPAddr([]), ipaddress.ip_address('192.168.1.1'))
 		self.assertEqual(ep.GetHostName(), '192.168.1.1')
 		self.assertEqual(ep.port, 443)
 
 		ep = Endpoint.FromURI(uri='tls://10.0.0.1:553', resolver=hosts)
 		self.assertEqual(ep.proto, 'tls')
-		self.assertEqual(ep.GetIPAddr(), ipaddress.ip_address('10.0.0.1'))
+		self.assertEqual(ep.GetIPAddr([]), ipaddress.ip_address('10.0.0.1'))
 		self.assertEqual(ep.GetHostName(), '10.0.0.1')
 		self.assertEqual(ep.port, 553)
 
 		ep = Endpoint.FromURI(uri='172.16.0.1', resolver=hosts)
 		self.assertEqual(ep.proto, 'udp')
-		self.assertEqual(ep.GetIPAddr(), ipaddress.ip_address('172.16.0.1'))
+		self.assertEqual(ep.GetIPAddr([]), ipaddress.ip_address('172.16.0.1'))
 		self.assertEqual(ep.GetHostName(), '172.16.0.1')
 		self.assertEqual(ep.port, 53)
 
 		ep = Endpoint.FromURI(uri='tcp://127.0.0.1:12345', resolver=hosts)
 		self.assertEqual(ep.proto, 'tcp')
-		self.assertEqual(ep.GetIPAddr(), ipaddress.ip_address('127.0.0.1'))
+		self.assertEqual(ep.GetIPAddr([]), ipaddress.ip_address('127.0.0.1'))
 		self.assertEqual(ep.GetHostName(), '127.0.0.1')
 		self.assertEqual(ep.port, 12345)
 
 		# ipv6
 		ep = Endpoint.FromURI(uri='https://[2001:4860:4860::8888]:8443', resolver=hosts)
 		self.assertEqual(ep.proto, 'https')
-		self.assertEqual(ep.GetIPAddr(), ipaddress.ip_address('2001:4860:4860::8888'))
+		self.assertEqual(ep.GetIPAddr([]), ipaddress.ip_address('2001:4860:4860::8888'))
 		self.assertEqual(ep.GetHostName(), '2001:4860:4860::8888')
 		self.assertEqual(ep.port, 8443)
 
 		ep = Endpoint.FromURI(uri='tls://[2620:fe::9]', resolver=hosts)
 		self.assertEqual(ep.proto, 'tls')
-		self.assertEqual(ep.GetIPAddr(), ipaddress.ip_address('2620:fe::9'))
+		self.assertEqual(ep.GetIPAddr([]), ipaddress.ip_address('2620:fe::9'))
 		self.assertEqual(ep.GetHostName(), '2620:fe::9')
 		self.assertEqual(ep.port, 853)
 
 		ep = Endpoint.FromURI(uri='udp://[::1]:5353', resolver=hosts)
 		self.assertEqual(ep.proto, 'udp')
-		self.assertEqual(ep.GetIPAddr(), ipaddress.ip_address('::1'))
+		self.assertEqual(ep.GetIPAddr([]), ipaddress.ip_address('::1'))
 		self.assertEqual(ep.GetHostName(), '::1')
 		self.assertEqual(ep.port, 5353)
 
 		ep = Endpoint.FromURI(uri='tcp://[fe80::7:8%eth0]', resolver=hosts)
 		self.assertEqual(ep.proto, 'tcp')
-		self.assertEqual(ep.GetIPAddr(), ipaddress.ip_address('fe80::7:8%eth0'))
+		self.assertEqual(ep.GetIPAddr([]), ipaddress.ip_address('fe80::7:8%eth0'))
 		self.assertEqual(ep.GetHostName(), 'fe80::7:8%eth0')
 		self.assertEqual(ep.port, 53)
 
@@ -191,7 +191,7 @@ class TestEndpoint(unittest.TestCase):
 		ep = Endpoint.FromURI(uri='https://dns.google', resolver=hosts)
 		self.assertEqual(ep.proto, 'https')
 		self.assertIn(
-			ep.GetIPAddr(),
+			ep.GetIPAddr([]),
 			[
 				ipaddress.ip_address('8.8.8.8'),
 				ipaddress.ip_address('8.8.4.4'),
@@ -207,7 +207,7 @@ class TestEndpoint(unittest.TestCase):
 		)
 		self.assertEqual(ep.proto, 'tls')
 		self.assertIn(
-			ep.GetIPAddr(),
+			ep.GetIPAddr([]),
 			[
 				ipaddress.ip_address('2001:4860:4860::8888'),
 				ipaddress.ip_address('2001:4860:4860::8844'),
@@ -220,7 +220,7 @@ class TestEndpoint(unittest.TestCase):
 		ep = Endpoint.FromURI(uri='abcd://dns.google:1234', resolver=hosts)
 		self.assertEqual(ep.proto, 'abcd')
 		self.assertIn(
-			ep.GetIPAddr(),
+			ep.GetIPAddr([]),
 			[
 				ipaddress.ip_address('8.8.8.8'),
 				ipaddress.ip_address('8.8.4.4'),

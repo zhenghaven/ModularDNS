@@ -59,14 +59,14 @@ class TestHosts(unittest.TestCase):
 
 		# dns.google
 		# both IPv4 and IPv6, prefer IPv4
-		ip = hosts.LookupIpAddr(domain='dns.google', preferIPv6=False)
+		ip = hosts.LookupIpAddr(domain='dns.google', preferIPv6=False, recDepthStack=[])
 		expIPStrs = TESTING_HOSTS_CONFIG['records'][0]['ip'][:2]
 		expIPs = [ipaddress.ip_address(x) for x in expIPStrs]
 		assert len(expIPs) == 2
 		self.assertIn(ip, expIPs)
 
 		# both IPv4 and IPv6, prefer IPv6
-		ip = hosts.LookupIpAddr(domain='dns.google', preferIPv6=True)
+		ip = hosts.LookupIpAddr(domain='dns.google', preferIPv6=True, recDepthStack=[])
 		expIPStrs = TESTING_HOSTS_CONFIG['records'][0]['ip'][2:]
 		expIPs = [ipaddress.ip_address(x) for x in expIPStrs]
 		assert len(expIPs) == 2
@@ -75,14 +75,14 @@ class TestHosts(unittest.TestCase):
 
 		# one.one.one.one
 		# both IPv4 and IPv6, prefer IPv4
-		ip = hosts.LookupIpAddr(domain='one.one.one.one', preferIPv6=False)
+		ip = hosts.LookupIpAddr(domain='one.one.one.one', preferIPv6=False, recDepthStack=[])
 		expIPStrs = TESTING_HOSTS_CONFIG['records'][2]['ip']
 		expIPs = [ipaddress.ip_address(x) for x in expIPStrs]
 		assert len(expIPs) == 2
 		self.assertIn(ip, expIPs)
 
 		# both IPv4 and IPv6, prefer IPv6
-		ip = hosts.LookupIpAddr(domain='one.one.one.one', preferIPv6=True)
+		ip = hosts.LookupIpAddr(domain='one.one.one.one', preferIPv6=True, recDepthStack=[])
 		expIPStrs = TESTING_HOSTS_CONFIG['records'][3]['ip']
 		expIPs = [ipaddress.ip_address(x) for x in expIPStrs]
 		assert len(expIPs) == 2
@@ -91,27 +91,27 @@ class TestHosts(unittest.TestCase):
 
 		# dns.google.com
 		# only IPv4, prefer IPv4
-		ip = hosts.LookupIpAddr(domain='dns.google.com', preferIPv6=False)
+		ip = hosts.LookupIpAddr(domain='dns.google.com', preferIPv6=False, recDepthStack=[])
 		expIPStrs = TESTING_HOSTS_CONFIG['records'][1]['ip']
 		expIPs = [ipaddress.ip_address(x) for x in expIPStrs]
 		assert len(expIPs) == 2
 		self.assertIn(ip, expIPs)
 
 		# only IPv4, prefer IPv6
-		ip = hosts.LookupIpAddr(domain='dns.google.com', preferIPv6=True)
+		ip = hosts.LookupIpAddr(domain='dns.google.com', preferIPv6=True, recDepthStack=[])
 		self.assertIn(ip, expIPs)
 
 
 		# dns.quad9.net
 		# only IPv6, prefer IPv6
-		ip = hosts.LookupIpAddr(domain='dns.quad9.net', preferIPv6=True)
+		ip = hosts.LookupIpAddr(domain='dns.quad9.net', preferIPv6=True, recDepthStack=[])
 		expIPStrs = TESTING_HOSTS_CONFIG['records'][4]['ip']
 		expIPs = [ipaddress.ip_address(x) for x in expIPStrs]
 		assert len(expIPs) == 2
 		self.assertIn(ip, expIPs)
 
 		# only IPv6, prefer IPv4
-		ip = hosts.LookupIpAddr(domain='dns.quad9.net', preferIPv6=False)
+		ip = hosts.LookupIpAddr(domain='dns.quad9.net', preferIPv6=False, recDepthStack=[])
 		self.assertIn(ip, expIPs)
 
 	def test_Hosts_3LookupFail(self):
@@ -119,9 +119,9 @@ class TestHosts(unittest.TestCase):
 
 		# Domain doesn't exist, prefer IPv4
 		with self.assertRaises(DNSNameNotFoundError):
-			hosts.LookupIpAddr(domain='not.exist', preferIPv6=False)
+			hosts.LookupIpAddr(domain='not.exist', preferIPv6=False, recDepthStack=[])
 
 		# Domain doesn't exist, prefer IPv6
 		with self.assertRaises(DNSNameNotFoundError):
-			hosts.LookupIpAddr(domain='not.exist', preferIPv6=True)
+			hosts.LookupIpAddr(domain='not.exist', preferIPv6=True, recDepthStack=[])
 

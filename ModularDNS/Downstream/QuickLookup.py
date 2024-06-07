@@ -47,9 +47,14 @@ class QuickLookup(HandlerByQuestion):
 	def LookupIpAddr(
 		self,
 		domain: str,
+		recDepthStack: List[ Tuple[ int, str ] ],
 		preferIPv6: bool = False,
 		requester: Tuple[str, int] = ('localhost', 0),
 	) -> Union[ipaddress.IPv4Address, ipaddress.IPv6Address]:
+		newRecStack = self.CheckRecursionDepth(
+			recDepthStack,
+			self.LookupIpAddr
+		)
 
 		questionEntry = QuestionEntry.QuestionEntry(
 			name=dns.name.from_text(domain),
@@ -61,6 +66,7 @@ class QuickLookup(HandlerByQuestion):
 			resps = self.HandleQuestion(
 				msgEntry=questionEntry,
 				senderAddr=requester,
+				recDepthStack=newRecStack,
 			)
 			return self.SelectOneAddress(domain=domain, entries=resps)
 		except DNSNameNotFoundError:
@@ -76,6 +82,7 @@ class QuickLookup(HandlerByQuestion):
 		resps = self.HandleQuestion(
 			msgEntry=questionEntry,
 			senderAddr=requester,
+			recDepthStack=newRecStack,
 		)
 		return self.SelectOneAddress(domain=domain, entries=resps)
 

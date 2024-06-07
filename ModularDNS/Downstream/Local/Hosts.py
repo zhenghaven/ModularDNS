@@ -115,7 +115,13 @@ class Hosts(QuickLookup):
 		self,
 		msgEntry: QuestionEntry.QuestionEntry,
 		senderAddr: Tuple[str, int],
+		recDepthStack: List[ Tuple[ int, str ] ],
 	) -> List[ MsgEntry.MsgEntry ]:
+		newRecStack = self.CheckRecursionDepth(
+			recDepthStack,
+			self.HandleQuestion
+		)
+
 		domain = msgEntry.GetNameStr(omitFinalDot=True)
 
 		with self.lutLock:

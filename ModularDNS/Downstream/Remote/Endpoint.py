@@ -10,8 +10,9 @@
 
 import ipaddress
 import re
+import uuid
 
-from typing import Tuple, Union
+from typing import List, Tuple, Union
 
 from ..QuickLookup import QuickLookup
 
@@ -141,16 +142,25 @@ class Endpoint(object):
 		self.resolver = resolver
 		self.preferIPv6 = preferIPv6
 
+		self.uuid = uuid.uuid4()
+
 		if (self.ipAddr is None) and (self.hostName is None):
 			raise ValueError('Neither IP address nor host name is provided')
 
-	def GetIPAddr(self) -> GENERIC_IP_ADDR:
+	def GetIPAddr(
+		self,
+		recDepthStack: List[ Tuple[ int, str ] ],
+	) -> GENERIC_IP_ADDR:
 		if self.ipAddr is not None:
 			return self.ipAddr
 		else:
+			newRecStack = list(recDepthStack) + [
+				(self.uuid.int, f'{self.__class__.__name__}.{self.GetIPAddr.__name__}')
+			]
 			return self.resolver.LookupIpAddr(
 				self.hostName,
-				preferIPv6=self.preferIPv6
+				preferIPv6=self.preferIPv6,
+				recDepthStack=newRecStack,
 			)
 
 	def GetHostName(self) -> str:
