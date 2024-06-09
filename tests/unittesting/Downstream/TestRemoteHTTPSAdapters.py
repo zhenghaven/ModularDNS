@@ -43,6 +43,8 @@ class TestRemoteHTTPSAdapters(unittest.TestCase):
 		resp.raise_for_status()
 
 	def test_Remote_HTTPSAdapters_1AccessViaIP(self):
+		logging.getLogger().info('')
+
 		testDomain = 'www.google.com'
 
 		udp = UDP(

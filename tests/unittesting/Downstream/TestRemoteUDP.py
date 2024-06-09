@@ -14,8 +14,10 @@ import unittest
 from ModularDNS.Downstream.Remote.UDP import UDP
 from ModularDNS.Downstream.Remote.Endpoint import Endpoint
 
+from .TestRemote import TestRemote
 
-class TestRemoteUDP(unittest.TestCase):
+
+class TestRemoteUDP(TestRemote):
 
 	def setUp(self):
 		pass
@@ -24,17 +26,9 @@ class TestRemoteUDP(unittest.TestCase):
 		pass
 
 	def test_Remote_UDP_1Lookup(self):
-		udp = UDP(
+		remote = UDP(
 			Endpoint.FromURI(uri='udp://8.8.8.8', resolver=None),
 		)
 
-		ip = udp.LookupIpAddr(domain='dns.google', preferIPv6=False, recDepthStack=[])
-		expIPStrs = [ '8.8.8.8', '8.8.4.4' ]
-		expIPs = [ipaddress.ip_address(x) for x in expIPStrs]
-		self.assertIn(ip, expIPs)
-
-		ip = udp.LookupIpAddr(domain='dns.google', preferIPv6=True, recDepthStack=[])
-		expIPStrs = [ '2001:4860:4860::8888', '2001:4860:4860::8844', ]
-		expIPs = [ipaddress.ip_address(x) for x in expIPStrs]
-		self.assertIn(ip, expIPs)
+		self.StandardLookupTest(remote=remote)
 

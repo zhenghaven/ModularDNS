@@ -30,11 +30,11 @@ class TestStackDepth(unittest.TestCase):
 
 		# make the endpoint of the udp object point to udp
 		# so a recursive loop will be created
-		udp.endpoint.resolver = udp
+		udp.underlying.endpoint.resolver = udp
 
 		with self.assertRaises(RecursionDepthError):
 			udp.LookupIpAddr(domain='dns.google', preferIPv6=False, recDepthStack=[])
 
 		# remove the circular reference
-		udp.endpoint.resolver = None
+		udp.underlying.endpoint.resolver = None
 

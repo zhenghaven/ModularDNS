@@ -16,7 +16,7 @@ from tests.unittesting import main
 if __name__ == '__main__':
 	logging.basicConfig(
 		level=logging.DEBUG,
-		format='%(asctime)s %(name)s[%(levelname)s]: %(message)s',
+		format='\t%(asctime)s %(name)s[%(levelname)s]: %(message)s',
 	)
 	main()
 

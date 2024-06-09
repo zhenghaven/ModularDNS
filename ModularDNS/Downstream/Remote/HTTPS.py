@@ -8,62 +8,86 @@
 ###
 
 
+import base64
+
 from typing import List, Tuple
 
 import dns.message
-import dns.query
+import requests
 
 from ...MsgEntry import AnsEntry, MsgEntry, QuestionEntry
 from ..Utils import CommonDNSRespHandling
+from .ConcurrentMgr import ConcurrentMgr
 from .Endpoint import Endpoint
+from .HTTPSAdapters import SmartAndSecureAdapter
 from .Protocol import Protocol, _REMOTE_INFO
 from .Remote import DEFAULT_TIMEOUT, Remote
 
 
-class UDPProtocol(Protocol):
+class HTTPSProtocol(Protocol):
 
 	def __init__(self, endpoint: Endpoint, timeout: float) -> None:
-		super(UDPProtocol, self).__init__(
+		super(HTTPSProtocol, self).__init__(
 			endpoint=endpoint,
 			timeout=timeout
 		)
+
+		self.session = requests.Session()
+		self.session.mount('https://', SmartAndSecureAdapter())
 
 	def Query(
 		self,
 		q: dns.message.Message,
 		recDepthStack: List[ Tuple[ int, str ] ],
 	) -> Tuple[dns.message.Message, _REMOTE_INFO]:
-		ip = self.endpoint.GetIPAddr(recDepthStack=recDepthStack)
-		port = self.endpoint.port
+		with self.lock:
+			rawMsg = q.to_wire()
+			rawMsgB64 = base64.urlsafe_b64encode(rawMsg)
+			rawMsgB64 = rawMsgB64.decode("utf-8").strip("=")
+			params = {
+				'dns': rawMsgB64,
+				'ct': 'application/dns-message',
+			}
 
-		resp = dns.query.udp(
-			q=q,
-			where=str(ip),
-			port=port,
-			timeout=self.timeout
-		)
+			ipAddr = self.endpoint.GetIPAddr(recDepthStack=recDepthStack)
+			port = self.endpoint.port
+			hostname = self.endpoint.GetHostName()
 
-		return (
-			resp,
-			(self.endpoint.GetHostName(), str(ip), port)
-		)
+			resp = self.session.get(
+				f'https://{ipAddr}:{port}/dns-query',
+				headers={
+					'Host': hostname,
+				},
+				params=params,
+				timeout=self.timeout,
+				verify=True,
+			)
+			resp.raise_for_status()
+
+			return (
+				dns.message.from_wire(resp.content),
+				(hostname, str(ipAddr), port)
+			)
 
 	def Terminate(self) -> None:
-		# we are using function call from dns.query
-		# nothing to stop here
-		pass
+		self.session.close()
 
 
-class UDP(Remote):
+class ConcurrentHTTPS(ConcurrentMgr):
+
+	SESSION_CLASS: Protocol = HTTPSProtocol
+
+
+class HTTPS(Remote):
 
 	def __init__(
 		self,
 		endpoint: Endpoint,
 		timeout: float = DEFAULT_TIMEOUT,
 	) -> None:
-		super(UDP, self).__init__(timeout=timeout)
+		super(HTTPS, self).__init__(timeout=timeout)
 
-		self.underlying = UDPProtocol(
+		self.underlying = ConcurrentHTTPS(
 			endpoint=endpoint,
 			timeout=timeout
 		)

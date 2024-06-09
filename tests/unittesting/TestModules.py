@@ -13,5 +13,6 @@ from .Downstream.TestHosts import TestHosts
 from .Downstream.TestEndpoint import TestEndpoint
 from .Downstream.TestStackDepth import TestStackDepth
 from .Downstream.TestRemoteUDP import TestRemoteUDP
+from .Downstream.TestRemoteHTTPS import TestRemoteHTTPS
 from .Downstream.TestRemoteHTTPSAdapters import TestRemoteHTTPSAdapters
 

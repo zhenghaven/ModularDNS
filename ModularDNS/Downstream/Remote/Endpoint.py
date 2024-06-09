@@ -169,3 +169,19 @@ class Endpoint(object):
 		else:
 			return str(self.ipAddr)
 
+
+class StaticEndpoint(Endpoint):
+
+	def GetIPAddr(
+		self,
+		recDepthStack: List[ Tuple[ int, str ] ],
+	) -> GENERIC_IP_ADDR:
+		if self.ipAddr is None:
+			# since this is a static endpoint, we can safely assume that
+			# the IP address will not change
+			# so we only need to resolve it once
+			self.ipAddr = super(StaticEndpoint, self).GetIPAddr(
+				recDepthStack=recDepthStack
+			)
+
+		return self.ipAddr
