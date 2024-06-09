@@ -124,6 +124,17 @@ class Endpoint(object):
 			preferIPv6=preferIPv6,
 		)
 
+	@classmethod
+	def FromCopy(cls, other: 'Endpoint') -> 'Endpoint':
+		return cls(
+			proto=other.proto,
+			ipAddr=other.ipAddr,
+			hostName=other.hostName,
+			port=other.port,
+			resolver=other.resolver,
+			preferIPv6=other.preferIPv6,
+		)
+
 	def __init__(
 		self,
 		proto: str,
@@ -185,3 +196,4 @@ class StaticEndpoint(Endpoint):
 			)
 
 		return self.ipAddr
+

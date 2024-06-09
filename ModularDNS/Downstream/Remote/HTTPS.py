@@ -28,7 +28,7 @@ class HTTPSProtocol(Protocol):
 
 	def __init__(self, endpoint: Endpoint, timeout: float) -> None:
 		super(HTTPSProtocol, self).__init__(
-			endpoint=endpoint,
+			endpoint=endpoint.FromCopy(endpoint),
 			timeout=timeout
 		)
 
