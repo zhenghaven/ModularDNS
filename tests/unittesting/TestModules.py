@@ -8,7 +8,6 @@
 ###
 
 
-from .TestSelfLock import TestSelfLock
 from .Downstream.TestHosts import TestHosts
 from .Downstream.TestEndpoint import TestEndpoint
 from .Downstream.TestStackDepth import TestStackDepth
