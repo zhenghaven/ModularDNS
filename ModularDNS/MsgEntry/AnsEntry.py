@@ -8,6 +8,7 @@
 ###
 
 
+import copy
 import ipaddress
 
 from typing import List, Union
@@ -81,4 +82,44 @@ class AnsEntry(MsgEntry):
 		self
 	) -> List[Union[ipaddress.IPv4Address, ipaddress.IPv6Address]]:
 		return [ ipaddress.ip_address(x.address) for x in self.dataList ]
+
+	def __copy__(self) -> 'AnsEntry':
+		return AnsEntry(
+			name=copy.copy(self.name),
+			rdCls=copy.copy(self.rdCls),
+			rdType=copy.copy(self.rdType),
+			dataList=copy.copy(self.dataList),
+			ttl=self.ttl,
+		)
+
+	def __deepcopy__(self, memo) -> 'AnsEntry':
+		return AnsEntry(
+			name=copy.deepcopy(self.name, memo),
+			rdCls=copy.deepcopy(self.rdCls, memo),
+			rdType=copy.deepcopy(self.rdType, memo),
+			dataList=copy.deepcopy(self.dataList, memo),
+			ttl=self.ttl,
+		)
+
+	def __eq__(self, other: object) -> bool:
+		if isinstance(other, AnsEntry):
+			return (
+				(self.name == other.name) and
+				(self.rdCls == other.rdCls) and
+				(self.rdType == other.rdType) and
+				(self.dataList == other.dataList) and
+				(self.ttl == other.ttl)
+			)
+		else:
+			return False
+
+	def __hash__(self) -> int:
+		return hash((
+			self.entryType,
+			self.name,
+			self.rdCls,
+			self.rdType,
+			tuple(self.dataList),
+			self.ttl,
+		))
 

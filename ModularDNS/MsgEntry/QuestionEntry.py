@@ -8,6 +8,8 @@
 ###
 
 
+import copy
+
 import dns.message
 import dns.name
 import dns.rdataclass
@@ -65,4 +67,31 @@ class QuestionEntry(MsgEntry):
 		)
 
 		return msg
+
+	def __copy__(self) -> 'QuestionEntry':
+		return QuestionEntry(
+			name=copy.copy(self.name),
+			rdCls=copy.copy(self.rdCls),
+			rdType=copy.copy(self.rdType),
+		)
+
+	def __deepcopy__(self, memo) -> 'QuestionEntry':
+		return QuestionEntry(
+			name=copy.deepcopy(self.name, memo),
+			rdCls=copy.deepcopy(self.rdCls, memo),
+			rdType=copy.deepcopy(self.rdType, memo),
+		)
+
+	def __eq__(self, other: object) -> bool:
+		if isinstance(other, QuestionEntry):
+			return (
+				(self.name == other.name) and
+				(self.rdCls == other.rdCls) and
+				(self.rdType == other.rdType)
+			)
+		else:
+			return False
+
+	def __hash__(self) -> int:
+		return hash((self.entryType, self.name, self.rdCls, self.rdType))
 
