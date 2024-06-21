@@ -72,8 +72,8 @@ class AnsEntry(MsgEntry):
 	def ToValDict(self) -> dict:
 		return {
 			'name': str(self.name.to_text()),
-			'class': str(self.rdCls.to_text()),
-			'type': str(self.rdType.to_text()),
+			'class': str(self.rdCls.to_text(self.rdCls)),
+			'type': str(self.rdType.to_text(self.rdType)),
 			'data': [ str(x) for x in self.dataList ],
 			'ttl': self.ttl,
 		}

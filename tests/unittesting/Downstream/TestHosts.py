@@ -11,6 +11,8 @@
 import ipaddress
 import unittest
 
+from typing import Type
+
 from ModularDNS.Downstream.Local.Hosts import Hosts
 from ModularDNS.Exceptions import DNSNameNotFoundError
 
@@ -35,8 +37,8 @@ TESTING_HOSTS_CONFIG = {
 }
 
 
-def BuildTestingHosts() -> Hosts:
-	hosts = Hosts.FromConfig(config=TESTING_HOSTS_CONFIG)
+def BuildTestingHosts(cls: Type[Hosts] = Hosts) -> Hosts:
+	hosts = cls.FromConfig(config=TESTING_HOSTS_CONFIG)
 	return hosts
 
 

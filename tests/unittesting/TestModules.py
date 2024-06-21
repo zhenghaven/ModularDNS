@@ -8,12 +8,16 @@
 ###
 
 
-from .Downstream.TestHosts import TestHosts
 from .Downstream.TestEndpoint import TestEndpoint
 from .Downstream.TestStackDepth import TestStackDepth
+
+from .Downstream.TestHosts import TestHosts
+from .Downstream.TestLocalCache import TestLocalCache
+
 from .Downstream.TestRemoteUDP import TestRemoteUDP
 from .Downstream.TestRemoteHTTPS import TestRemoteHTTPS
 from .Downstream.TestRemoteHTTPSAdapters import TestRemoteHTTPSAdapters
+
 from .MsgEntry.TestQuestionEntry import TestQuestionEntry
 from .MsgEntry.TestAnsEntry import TestAnsEntry
 
