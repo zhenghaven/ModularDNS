@@ -35,8 +35,21 @@ class Rule(object):
 			f'{self.__class__.__name__}.Match() is not implemented'
 		)
 
+	def __hash__(self) -> int:
+		raise NotImplementedError(
+			f'{self.__class__.__name__}.__hash__() is not implemented'
+		)
+
+	def __eq__(self, other: object) -> bool:
+		raise NotImplementedError(
+			f'{self.__class__.__name__}.__eq__() is not implemented'
+		)
+
 
 class ConfigurableWeightRule(Rule):
+
+	RULE_TYPE_LABEL = None
+
 	def __init__(self, defaultWeight: int, ruleStr: str) -> None:
 		super(ConfigurableWeightRule, self).__init__()
 
@@ -50,9 +63,23 @@ class ConfigurableWeightRule(Rule):
 		else:
 			raise ValueError(f'Invalid rule format: {ruleStr}')
 
+	def __hash__(self) -> int:
+		return hash((self.RULE_TYPE_LABEL, self._weight, self._ruleBody))
+
+	def __eq__(self, other: object) -> bool:
+		if not isinstance(other, ConfigurableWeightRule):
+			return False
+		else:
+			return (
+				(self.RULE_TYPE_LABEL == other.RULE_TYPE_LABEL) and
+				(self._weight == other._weight) and
+				(self._ruleBody == other._ruleBody)
+			)
+
 
 class SubDomainRule(ConfigurableWeightRule):
 
+	RULE_TYPE_LABEL = 'sub'
 	DEFAULT_WEIGHT = 50
 
 	def __init__(self, ruleStr: str) -> None:
@@ -67,6 +94,7 @@ class SubDomainRule(ConfigurableWeightRule):
 
 class FullMatchRule(ConfigurableWeightRule):
 
+	RULE_TYPE_LABEL = 'full'
 	DEFAULT_WEIGHT = 90
 
 	def __init__(self, ruleStr: str) -> None:
@@ -80,8 +108,8 @@ class FullMatchRule(ConfigurableWeightRule):
 
 
 RULE_TYPE_MAP = {
-	'sub':      SubDomainRule,
-	'full':     FullMatchRule,
+	SubDomainRule.RULE_TYPE_LABEL:      SubDomainRule,
+	FullMatchRule.RULE_TYPE_LABEL:      FullMatchRule,
 	# 'regex':    RegexRule, # plan for future support
 }
 

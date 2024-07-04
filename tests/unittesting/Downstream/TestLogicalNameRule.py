@@ -211,3 +211,77 @@ class TestLogicalNameRule(unittest.TestCase):
 		self.assertFalse(isMatch)
 		self.assertEqual(weight, 23)
 
+	def test_5SubDomainRuleHashable(self):
+		rule1: QuestionRule.SubDomainRule = QuestionRule.RuleFromStr('sub:->>23:~>>google.com')
+		self.assertEqual(rule1.RULE_TYPE_LABEL, 'sub')
+		self.assertEqual(rule1._weight, 23)
+		self.assertEqual(rule1._ruleBody, 'google.com')
+
+		rule2: QuestionRule.SubDomainRule = QuestionRule.RuleFromStr('sub:->>0023:~>>google.com')
+		self.assertEqual(rule2.RULE_TYPE_LABEL, 'sub')
+		self.assertEqual(rule2._weight, 23)
+		self.assertEqual(rule2._ruleBody, 'google.com')
+
+		self.assertEqual(rule1, rule2)
+		self.assertEqual(hash(rule1), hash(rule2))
+
+		rule3: QuestionRule.SubDomainRule = QuestionRule.RuleFromStr('sub:->>67:~>>google.com')
+		self.assertEqual(rule3.RULE_TYPE_LABEL, 'sub')
+		self.assertEqual(rule3._weight, 67)
+		self.assertEqual(rule3._ruleBody, 'google.com')
+
+		self.assertNotEqual(rule1, rule3)
+		self.assertNotEqual(hash(rule1), hash(rule3))
+
+		rule4: QuestionRule.SubDomainRule = QuestionRule.RuleFromStr('sub:->>23:~>>a.google.com')
+		self.assertEqual(rule4.RULE_TYPE_LABEL, 'sub')
+		self.assertEqual(rule4._weight, 23)
+		self.assertEqual(rule4._ruleBody, 'a.google.com')
+
+		self.assertNotEqual(rule1, rule4)
+		self.assertNotEqual(hash(rule1), hash(rule4))
+
+	def test_6FullMatchRuleHashable(self):
+		rule1: QuestionRule.FullMatchRule = QuestionRule.RuleFromStr('full:->>23:~>>google.com')
+		self.assertEqual(rule1.RULE_TYPE_LABEL, 'full')
+		self.assertEqual(rule1._weight, 23)
+		self.assertEqual(rule1._ruleBody, 'google.com')
+
+		rule2: QuestionRule.FullMatchRule = QuestionRule.RuleFromStr('full:->>0023:~>>google.com')
+		self.assertEqual(rule2.RULE_TYPE_LABEL, 'full')
+		self.assertEqual(rule2._weight, 23)
+		self.assertEqual(rule2._ruleBody, 'google.com')
+
+		self.assertEqual(rule1, rule2)
+		self.assertEqual(hash(rule1), hash(rule2))
+
+		rule3: QuestionRule.FullMatchRule = QuestionRule.RuleFromStr('full:->>67:~>>google.com')
+		self.assertEqual(rule3.RULE_TYPE_LABEL, 'full')
+		self.assertEqual(rule3._weight, 67)
+		self.assertEqual(rule3._ruleBody, 'google.com')
+
+		self.assertNotEqual(rule1, rule3)
+		self.assertNotEqual(hash(rule1), hash(rule3))
+
+		rule4: QuestionRule.FullMatchRule = QuestionRule.RuleFromStr('full:->>23:~>>a.google.com')
+		self.assertEqual(rule4.RULE_TYPE_LABEL, 'full')
+		self.assertEqual(rule4._weight, 23)
+		self.assertEqual(rule4._ruleBody, 'a.google.com')
+
+		self.assertNotEqual(rule1, rule4)
+		self.assertNotEqual(hash(rule1), hash(rule4))
+
+	def test_6RuleHashable(self):
+		rule1: QuestionRule.SubDomainRule = QuestionRule.RuleFromStr('sub:->>23:~>>google.com')
+		self.assertEqual(rule1.RULE_TYPE_LABEL, 'sub')
+		self.assertEqual(rule1._weight, 23)
+		self.assertEqual(rule1._ruleBody, 'google.com')
+
+		rule2: QuestionRule.FullMatchRule = QuestionRule.RuleFromStr('full:->>23:~>>google.com')
+		self.assertEqual(rule2.RULE_TYPE_LABEL, 'full')
+		self.assertEqual(rule2._weight, 23)
+		self.assertEqual(rule2._ruleBody, 'google.com')
+
+		self.assertNotEqual(rule1, rule2)
+		self.assertNotEqual(hash(rule1), hash(rule2))
+
