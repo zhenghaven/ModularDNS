@@ -14,7 +14,7 @@ from .Downstream.TestStackDepth import TestStackDepth
 from .Downstream.TestHosts import TestHosts
 from .Downstream.TestLocalCache import TestLocalCache
 
-from .Downstream.TestLogicalNameRule import TestLogicalNameRule
+from .Downstream.TestLogicalQuestionRule import TestLogicalQuestionRule
 
 from .Downstream.TestRemoteUDP import TestRemoteUDP
 from .Downstream.TestRemoteHTTPS import TestRemoteHTTPS

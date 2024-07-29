@@ -18,7 +18,7 @@ from ModularDNS.Downstream.Logical import QuestionRule
 from ModularDNS.MsgEntry.QuestionEntry import QuestionEntry
 
 
-class TestLogicalNameRule(unittest.TestCase):
+class TestLogicalQuestionRule(unittest.TestCase):
 
 	def setUp(self):
 		pass
