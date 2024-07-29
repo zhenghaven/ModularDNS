@@ -76,6 +76,9 @@ class ConfigurableWeightRule(Rule):
 				(self._ruleBody == other._ruleBody)
 			)
 
+	def __str__(self) -> str:
+		return f'{self.RULE_TYPE_LABEL}:->>{self._weight}:~>>{self._ruleBody}'
+
 
 class SubDomainRule(ConfigurableWeightRule):
 
