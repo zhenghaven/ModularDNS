@@ -50,18 +50,31 @@ class ConfigurableWeightRule(Rule):
 
 	RULE_TYPE_LABEL = None
 
-	def __init__(self, defaultWeight: int, ruleStr: str) -> None:
+	def __init__(
+		self,
+		defaultWeight: int,
+		ruleStr: str,
+		noSepAsWeight: bool = False,
+	) -> None:
 		super(ConfigurableWeightRule, self).__init__()
 
-		cmps = ruleStr.split(':~>>', maxsplit=1)
-		if len(cmps) == 1:
+		if ruleStr == '':
 			self._weight = defaultWeight
-			self._ruleBody = cmps[0]
-		elif len(cmps) == 2:
-			self._weight = int(cmps[0])
-			self._ruleBody = cmps[1]
+			self._ruleBody = ''
 		else:
-			raise ValueError(f'Invalid rule format: {ruleStr}')
+			cmps = ruleStr.split(':~>>', maxsplit=1)
+			if len(cmps) == 1:
+				if noSepAsWeight:
+					self._weight = int(cmps[0])
+					self._ruleBody = ''
+				else:
+					self._weight = defaultWeight
+					self._ruleBody = cmps[0]
+			elif len(cmps) == 2:
+				self._weight = int(cmps[0])
+				self._ruleBody = cmps[1]
+			else:
+				raise ValueError(f'Invalid rule format: {ruleStr}')
 
 	def __hash__(self) -> int:
 		return hash((self.RULE_TYPE_LABEL, self._weight, self._ruleBody))
@@ -110,23 +123,41 @@ class FullMatchRule(ConfigurableWeightRule):
 			return (False, self._weight)
 
 
+class DefaultRule(ConfigurableWeightRule):
+
+	RULE_TYPE_LABEL = 'default'
+	DEFAULT_WEIGHT = 10
+
+	def __init__(self, ruleStr: str) -> None:
+		super(DefaultRule, self).__init__(
+			self.DEFAULT_WEIGHT,
+			ruleStr,
+			noSepAsWeight=True,
+		)
+
+	def Match(self, question: QuestionEntry.QuestionEntry) -> Tuple[bool, int]:
+		return (True, self._weight)
+
+
 RULE_TYPE_MAP = {
+	DefaultRule.RULE_TYPE_LABEL:        DefaultRule,
 	SubDomainRule.RULE_TYPE_LABEL:      SubDomainRule,
 	FullMatchRule.RULE_TYPE_LABEL:      FullMatchRule,
 	# 'regex':    RegexRule, # plan for future support
 }
 
 
-def _ParseRuleStr(ruleStr: str) -> Tuple[str, str]:
-	RULE_FORMAT = r'^([a-zA-Z][a-zA-Z0-9]+)\:\-\>\>(.+)$'
+_ROOT_RULE_FORMAT = r'^([a-zA-Z][a-zA-Z0-9]+)(?:\:\-\>\>(.+))?$'
+_ROOT_RULE_RE = re.compile(_ROOT_RULE_FORMAT)
 
-	r = re.compile(RULE_FORMAT)
-	m = r.match(ruleStr)
+
+def _ParseRuleStr(ruleStr: str) -> Tuple[str, str]:
+	m = _ROOT_RULE_RE.match(ruleStr)
 	if m is None:
 		raise ValueError(f'Invalid rule format: {ruleStr}')
 	else:
 		ruleType = m.group(1)
-		ruleBody = m.group(2)
+		ruleBody = m.group(2) if m.group(2) is not None else ''
 
 		return (ruleType, ruleBody)
 
