@@ -13,8 +13,10 @@ from .Downstream.TestStackDepth import TestStackDepth
 from .Downstream.TestLocalCache import TestLocalCache
 from .Downstream.TestLocalHosts import TestLocalHosts
 
+from .Downstream.TestLogicalFailover import TestLogicalFailover
 from .Downstream.TestLogicalQuestionRule import TestLogicalQuestionRule
 from .Downstream.TestLogicalQuestionRuleSet import TestLogicalQuestionRuleSet
+from .Downstream.TestLogicalRandomChoice import TestLogicalRandomChoice
 
 from .Downstream.TestRemoteEndpoint import TestRemoteEndpoint
 from .Downstream.TestRemoteHTTPS import TestRemoteHTTPS
