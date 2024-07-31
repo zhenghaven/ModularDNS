@@ -26,7 +26,7 @@ class TestQuestionEntry(unittest.TestCase):
 	def tearDown(self):
 		pass
 
-	def test_QuestionEntry_1Hashable(self):
+	def test_MsgEntry_QuestionEntry_1Hashable(self):
 		questionEntry1 = QuestionEntry(
 			name=dns.name.from_text('google.com'),
 			rdCls=dns.rdataclass.IN,
@@ -74,7 +74,7 @@ class TestQuestionEntry(unittest.TestCase):
 		msgEntry = MsgEntry(entryType=questionEntry1.entryType)
 		self.assertNotEqual(questionEntry1, msgEntry)
 
-	def test_QuestionEntry_2Copy(self):
+	def test_MsgEntry_QuestionEntry_2Copy(self):
 		questionEntry = QuestionEntry(
 			name=dns.name.from_text('google.com'),
 			rdCls=dns.rdataclass.IN,
@@ -95,7 +95,7 @@ class TestQuestionEntry(unittest.TestCase):
 		self.assertEqual(questionEntry.rdCls, questionEntryCopy.rdCls)
 		self.assertEqual(questionEntry.rdType, questionEntryCopy.rdType)
 
-	def test_QuestionEntry_3DeepCopy(self):
+	def test_MsgEntry_QuestionEntry_3DeepCopy(self):
 		questionEntry = QuestionEntry(
 			name=dns.name.from_text('google.com'),
 			rdCls=dns.rdataclass.IN,

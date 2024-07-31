@@ -42,7 +42,33 @@ def BuildTestingHosts(cls: Type[Hosts] = Hosts) -> Hosts:
 	return hosts
 
 
-class TestHosts(unittest.TestCase):
+class CountingHosts(Hosts):
+
+
+	def __init__(self, ttl: int = Hosts.DEFAULT_TTL) -> None:
+		super(CountingHosts, self).__init__(ttl=ttl)
+
+		self.__counter = 0
+
+	def HandleQuestion(
+		self,
+		msgEntry,
+		senderAddr,
+		recDepthStack,
+	):
+		self.__counter += 1
+
+		return super(CountingHosts, self).HandleQuestion(
+			msgEntry=msgEntry,
+			senderAddr=senderAddr,
+			recDepthStack=recDepthStack,
+		)
+
+	def GetCounter(self):
+		return self.__counter
+
+
+class TestLocalHosts(unittest.TestCase):
 
 	def setUp(self):
 		pass
@@ -50,13 +76,13 @@ class TestHosts(unittest.TestCase):
 	def tearDown(self):
 		pass
 
-	def test_Hosts_1BuildTestingHosts(self):
+	def test_Downstream_Local_Hosts_1BuildTestingHosts(self):
 		hosts = BuildTestingHosts()
 		self.assertIsInstance(hosts, Hosts)
 		self.assertEqual(hosts.ttl, 3600)
 		self.assertEqual(hosts.GetNumDomains(), 4)
 
-	def test_Hosts_2Lookup(self):
+	def test_Downstream_Local_Hosts_2Lookup(self):
 		hosts = BuildTestingHosts()
 
 		# dns.google
@@ -116,7 +142,7 @@ class TestHosts(unittest.TestCase):
 		ip = hosts.LookupIpAddr(domain='dns.quad9.net', preferIPv6=False, recDepthStack=[])
 		self.assertIn(ip, expIPs)
 
-	def test_Hosts_3LookupFail(self):
+	def test_Downstream_Local_Hosts_3LookupFail(self):
 		hosts = BuildTestingHosts()
 
 		# Domain doesn't exist, prefer IPv4

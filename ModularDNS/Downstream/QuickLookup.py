@@ -17,7 +17,7 @@ import dns.name
 import dns.rdataclass
 import dns.rdatatype
 
-from ..Exceptions import DNSNameNotFoundError
+from ..Exceptions import DNSNameNotFoundError, DNSZeroAnswerError
 from ..MsgEntry import AnsEntry, MsgEntry, QuestionEntry
 from .HandlerByQuestion import HandlerByQuestion
 
@@ -40,7 +40,7 @@ class QuickLookup(HandlerByQuestion):
 				res += ans.GetAddresses()
 
 		if len(res) == 0:
-			raise DNSNameNotFoundError(domain, self.__class__.__name__)
+			raise DNSZeroAnswerError(domain)
 		else:
 			return random.choice(res)
 
@@ -69,7 +69,7 @@ class QuickLookup(HandlerByQuestion):
 				recDepthStack=newRecStack,
 			)
 			return self.SelectOneAddress(domain=domain, entries=resps)
-		except DNSNameNotFoundError:
+		except (DNSNameNotFoundError, DNSZeroAnswerError):
 			# the preferred type is not found, try the other type
 			pass
 

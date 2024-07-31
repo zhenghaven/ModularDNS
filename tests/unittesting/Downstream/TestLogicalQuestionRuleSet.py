@@ -18,8 +18,7 @@ import dns.rdatatype
 from ModularDNS.Downstream.Logical import QuestionRuleSet
 from ModularDNS.MsgEntry.QuestionEntry import QuestionEntry
 
-from .TestHosts import BuildTestingHosts
-from .TestLocalCache import CountingHosts
+from .TestLocalHosts import BuildTestingHosts, CountingHosts
 
 
 class TestLogicalQuestionRuleSet(unittest.TestCase):
@@ -30,7 +29,7 @@ class TestLogicalQuestionRuleSet(unittest.TestCase):
 	def tearDown(self):
 		pass
 
-	def test_1RuleMatching(self):
+	def test_Downstream_Logical_QuestionRuleSet_1RuleMatching(self):
 		hosts1 = BuildTestingHosts(cls=CountingHosts)
 		hosts2 = BuildTestingHosts(cls=CountingHosts)
 
@@ -68,7 +67,7 @@ class TestLogicalQuestionRuleSet(unittest.TestCase):
 		with self.assertRaises(RuntimeError):
 			matchedHandler = ruleSet.MatchHandler(question3)
 
-	def test_2QuestionHandling(self):
+	def test_Downstream_Logical_QuestionRuleSet_2QuestionHandling(self):
 		hosts1 = BuildTestingHosts(cls=CountingHosts)
 		hosts2 = BuildTestingHosts(cls=CountingHosts)
 

@@ -18,6 +18,7 @@ import dns.rdata
 import dns.rdataclass
 import dns.rdatatype
 
+from ...Exceptions import DNSNameNotFoundError, DNSZeroAnswerError
 from ...MsgEntry import AnsEntry, MsgEntry, QuestionEntry
 from ..QuickLookup import QuickLookup
 
@@ -52,6 +53,8 @@ class Hosts(QuickLookup):
 		self.lutLock = threading.Lock()
 		self.lut = {}
 		self.ttl = ttl
+
+		self._clsName = f'{__name__}.{self.__class__.__name__}'
 
 	def AddRecord(
 		self,
@@ -125,9 +128,15 @@ class Hosts(QuickLookup):
 		domain = msgEntry.GetNameStr(omitFinalDot=True)
 
 		with self.lutLock:
+			if domain not in self.lut:
+				raise DNSNameNotFoundError(name=domain, respServer=self._clsName)
+
 			domainLut: dict = self.lut.get(domain, dict())
 			rdClsLut: dict = domainLut.get(msgEntry.rdCls, dict())
 			recSet: List[dns.rdata.Rdata] = rdClsLut.get(msgEntry.rdType, set())
+
+			if len(recSet) == 0:
+				raise DNSZeroAnswerError(name=domain)
 
 			dataList = [ copy.deepcopy(rec) for rec in recSet ]
 

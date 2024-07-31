@@ -42,7 +42,7 @@ class TestRemoteHTTPSAdapters(unittest.TestCase):
 		self.logger.debug(f'Response status code: {resp.status_code}')
 		resp.raise_for_status()
 
-	def test_Remote_HTTPSAdapters_1AccessViaIP(self):
+	def test_Downstream_Remote_HTTPSAdapters_1AccessViaIP(self):
 		logging.getLogger().info('')
 
 		testDomain = 'www.google.com'

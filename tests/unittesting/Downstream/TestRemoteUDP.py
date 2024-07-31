@@ -8,9 +8,6 @@
 ###
 
 
-import ipaddress
-import unittest
-
 from ModularDNS.Downstream.Remote.UDP import UDP
 from ModularDNS.Downstream.Remote.Endpoint import Endpoint
 
@@ -25,7 +22,7 @@ class TestRemoteUDP(TestRemote):
 	def tearDown(self):
 		pass
 
-	def test_Remote_UDP_1Lookup(self):
+	def test_Downstream_Remote_UDP_1Lookup(self):
 		remote = UDP(
 			Endpoint.FromURI(uri='udp://8.8.8.8', resolver=None),
 		)

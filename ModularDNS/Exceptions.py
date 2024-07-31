@@ -27,7 +27,7 @@ class DNSZeroAnswerError(Exception):
 
 class DNSRequestRefusedError(Exception):
 	def __init__(self, sendAddr: Any, toAddr: Any) -> None:
-		super(DNSZeroAnswerError, self).__init__(
+		super(DNSRequestRefusedError, self).__init__(
 			f'DNS request from "{sendAddr}" to "{toAddr}" has been refused'
 		)
 

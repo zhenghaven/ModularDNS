@@ -12,10 +12,10 @@ import unittest
 
 from ModularDNS.Downstream.Remote.Endpoint import Endpoint
 
-from .TestHosts import BuildTestingHosts
+from .TestLocalHosts import BuildTestingHosts
 
 
-class TestEndpoint(unittest.TestCase):
+class TestRemoteEndpoint(unittest.TestCase):
 
 	def setUp(self):
 		pass
@@ -23,7 +23,7 @@ class TestEndpoint(unittest.TestCase):
 	def tearDown(self):
 		pass
 
-	def test_Endpoint_1ParseProto(self):
+	def test_Downstream_Remote_Endpoint_1ParseProto(self):
 		self.assertEqual(
 			Endpoint.ParseProto(uri='http://'),
 			('http', '')
@@ -61,7 +61,7 @@ class TestEndpoint(unittest.TestCase):
 			(Endpoint.DEFAULT_PROTO, 'ht:tp://:')
 		)
 
-	def test_Endpoint_2ParseDomainAndPort(self):
+	def test_Downstream_Remote_Endpoint_2ParseDomainAndPort(self):
 		# ipv4
 		self.assertEqual(
 			Endpoint.ParseDomainAndPort(dnp='192.168.1.1'),
@@ -135,7 +135,7 @@ class TestEndpoint(unittest.TestCase):
 		with self.assertRaises(ValueError):
 			Endpoint.ParseDomainAndPort(dnp='[abcd://]')
 
-	def test_Endpoint_3FromURI(self):
+	def test_Downstream_Remote_Endpoint_3FromURI(self):
 		hosts = BuildTestingHosts()
 		# ipv4
 		ep = Endpoint.FromURI(uri='https://192.168.1.1', resolver=hosts)

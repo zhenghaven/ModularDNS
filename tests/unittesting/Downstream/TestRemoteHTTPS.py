@@ -13,7 +13,7 @@ import logging
 from ModularDNS.Downstream.Remote.HTTPS import HTTPS
 from ModularDNS.Downstream.Remote.Endpoint import StaticEndpoint
 
-from .TestHosts import BuildTestingHosts
+from .TestLocalHosts import BuildTestingHosts
 from .TestRemote import TestRemote
 
 
@@ -25,7 +25,7 @@ class TestRemoteHTTPS(TestRemote):
 	def tearDown(self):
 		pass
 
-	def test_Remote_HTTPS_1Lookup(self):
+	def test_Downstream_Remote_HTTPS_1Lookup(self):
 		logging.getLogger().info('')
 
 		hosts = BuildTestingHosts()
@@ -34,7 +34,7 @@ class TestRemoteHTTPS(TestRemote):
 		)
 		self.StandardLookupTest(remote=remote)
 
-	def test_Remote_HTTPS_2Concurrent(self):
+	def test_Downstream_Remote_HTTPS_2Concurrent(self):
 		logging.getLogger().info('')
 
 		hosts = BuildTestingHosts()

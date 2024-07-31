@@ -26,7 +26,7 @@ class TestLogicalQuestionRule(unittest.TestCase):
 	def tearDown(self):
 		pass
 
-	def test_1ParseRootRule(self):
+	def test_Downstream_Logical_QuestionRule_1ParseRootRule(self):
 		ruleType, ruleBody = QuestionRule._ParseRuleStr('sub:->>google.com')
 		self.assertEqual(ruleType, 'sub')
 		self.assertEqual(ruleBody, 'google.com')
@@ -74,7 +74,7 @@ class TestLogicalQuestionRule(unittest.TestCase):
 		with self.assertRaises(ValueError):
 			QuestionRule._ParseRuleStr('su&b:->>google.com')
 
-	def test_2ParseConfigurableWeightRule(self):
+	def test_Downstream_Logical_QuestionRule_2ParseConfigurableWeightRule(self):
 		rule = QuestionRule.ConfigurableWeightRule(12, '50:~>>dns.google.com')
 		self.assertEqual(rule._weight, 50)
 		self.assertEqual(type(rule._weight), int)
@@ -114,7 +114,7 @@ class TestLogicalQuestionRule(unittest.TestCase):
 		with self.assertRaises(ValueError):
 			QuestionRule.ConfigurableWeightRule(12, '50a:~>>dns.google.com')
 
-	def test_3SubDomainRuleMatch(self):
+	def test_Downstream_Logical_QuestionRule_3SubDomainRuleMatch(self):
 		rule: QuestionRule.SubDomainRule = QuestionRule.RuleFromStr('sub:->>23:~>>google.com')
 		self.assertEqual(rule._weight, 23)
 		self.assertEqual(rule._ruleBody, 'google.com')
@@ -171,7 +171,7 @@ class TestLogicalQuestionRule(unittest.TestCase):
 		self.assertFalse(isMatch)
 		self.assertEqual(weight, 23)
 
-	def test_4FullMatchRuleMatch(self):
+	def test_Downstream_Logical_QuestionRule_4FullMatchRuleMatch(self):
 		rule: QuestionRule.FullMatchRule = QuestionRule.RuleFromStr('full:->>23:~>>google.com')
 		self.assertEqual(rule._weight, 23)
 		self.assertEqual(rule._ruleBody, 'google.com')
@@ -212,7 +212,7 @@ class TestLogicalQuestionRule(unittest.TestCase):
 		self.assertFalse(isMatch)
 		self.assertEqual(weight, 23)
 
-	def test_5DefaultRuleMatch(self):
+	def test_Downstream_Logical_QuestionRule_5DefaultRuleMatch(self):
 		rule: QuestionRule.DefaultRule = QuestionRule.RuleFromStr('default')
 		self.assertEqual(rule._weight, QuestionRule.DefaultRule.DEFAULT_WEIGHT)
 		self.assertEqual(rule._ruleBody, '')
@@ -237,7 +237,7 @@ class TestLogicalQuestionRule(unittest.TestCase):
 		self.assertTrue(isMatch)
 		self.assertEqual(weight, QuestionRule.DefaultRule.DEFAULT_WEIGHT)
 
-	def test_6SubDomainRuleHashable(self):
+	def test_Downstream_Logical_QuestionRule_6SubDomainRuleHashable(self):
 		rule1: QuestionRule.SubDomainRule = QuestionRule.RuleFromStr('sub:->>23:~>>google.com')
 		self.assertEqual(rule1.RULE_TYPE_LABEL, 'sub')
 		self.assertEqual(rule1._weight, 23)
@@ -280,7 +280,7 @@ class TestLogicalQuestionRule(unittest.TestCase):
 		self.assertNotEqual(rule1, rule5)
 		self.assertNotEqual(hash(rule1), hash(rule5))
 
-	def test_7FullMatchRuleHashable(self):
+	def test_Downstream_Logical_QuestionRule_7FullMatchRuleHashable(self):
 		rule1: QuestionRule.FullMatchRule = QuestionRule.RuleFromStr('full:->>23:~>>google.com')
 		self.assertEqual(rule1.RULE_TYPE_LABEL, 'full')
 		self.assertEqual(rule1._weight, 23)
@@ -323,7 +323,7 @@ class TestLogicalQuestionRule(unittest.TestCase):
 		self.assertNotEqual(rule1, rule5)
 		self.assertNotEqual(hash(rule1), hash(rule5))
 
-	def test_8DefaultRuleHashable(self):
+	def test_Downstream_Logical_QuestionRule_8DefaultRuleHashable(self):
 		rule1: QuestionRule.DefaultRule = QuestionRule.RuleFromStr('default')
 		self.assertEqual(rule1.RULE_TYPE_LABEL, 'default')
 		self.assertEqual(rule1._weight, QuestionRule.DefaultRule.DEFAULT_WEIGHT)
@@ -376,7 +376,7 @@ class TestLogicalQuestionRule(unittest.TestCase):
 		self.assertNotEqual(rule1, rule6)
 		self.assertNotEqual(hash(rule1), hash(rule6))
 
-	def test_9RuleHashable(self):
+	def test_Downstream_Logical_QuestionRule_9RuleHashable(self):
 		rule1: QuestionRule.SubDomainRule = QuestionRule.RuleFromStr('sub:->>23:~>>google.com')
 		self.assertEqual(rule1.RULE_TYPE_LABEL, 'sub')
 		self.assertEqual(rule1._weight, 23)

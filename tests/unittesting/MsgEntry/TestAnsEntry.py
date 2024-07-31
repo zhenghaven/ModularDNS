@@ -27,7 +27,7 @@ class TestAnsEntry(unittest.TestCase):
 	def tearDown(self):
 		pass
 
-	def test_AnsEntry_1Equal(self):
+	def test_MsgEntry_AnsEntry_1Equal(self):
 		ansEntry1 = AnsEntry(
 			name=dns.name.from_text('dns.google.com'),
 			rdCls=dns.rdataclass.IN,
@@ -131,7 +131,7 @@ class TestAnsEntry(unittest.TestCase):
 		msgEntry = MsgEntry(entryType=ansEntry1.entryType)
 		self.assertNotEqual(ansEntry1, msgEntry)
 
-	def test_AnsEntry_2Copy(self):
+	def test_MsgEntry_AnsEntry_2Copy(self):
 		ansEntry1 = AnsEntry(
 			name=dns.name.from_text('dns.google.com'),
 			rdCls=dns.rdataclass.IN,
@@ -172,7 +172,7 @@ class TestAnsEntry(unittest.TestCase):
 		self.assertEqual(ansEntry1.ttl, ansEntryCopy.ttl)
 		self.assertNotEqual(ansEntry1.dataList, ansEntryCopy.dataList)
 
-	def test_AnsEntry_3DeepCopy(self):
+	def test_MsgEntry_AnsEntry_3DeepCopy(self):
 		ansEntry1 = AnsEntry(
 			name=dns.name.from_text('dns.google.com'),
 			rdCls=dns.rdataclass.IN,

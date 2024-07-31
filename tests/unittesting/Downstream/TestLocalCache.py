@@ -16,38 +16,11 @@ import dns.name
 import dns.rdataclass
 import dns.rdatatype
 
-from ModularDNS.Downstream.Local.Hosts import Hosts
 from ModularDNS.Downstream.Local.Cache import Cache
 from ModularDNS.MsgEntry.AnsEntry import AnsEntry
 from ModularDNS.MsgEntry.QuestionEntry import QuestionEntry
 
-from .TestHosts import BuildTestingHosts
-
-
-class CountingHosts(Hosts):
-
-
-	def __init__(self, ttl: int = Hosts.DEFAULT_TTL) -> None:
-		super(CountingHosts, self).__init__(ttl=ttl)
-
-		self.__counter = 0
-
-	def HandleQuestion(
-		self,
-		msgEntry,
-		senderAddr,
-		recDepthStack,
-	):
-		self.__counter += 1
-
-		return super(CountingHosts, self).HandleQuestion(
-			msgEntry=msgEntry,
-			senderAddr=senderAddr,
-			recDepthStack=recDepthStack,
-		)
-
-	def GetCounter(self):
-		return self.__counter
+from .TestLocalHosts import BuildTestingHosts, CountingHosts
 
 
 class TestLocalCache(unittest.TestCase):
@@ -58,7 +31,7 @@ class TestLocalCache(unittest.TestCase):
 	def tearDown(self):
 		pass
 
-	def test_LocalCache_1Basic(self):
+	def test_Downstream_Local_Cache_1Basic(self):
 		hosts: CountingHosts = BuildTestingHosts(cls=CountingHosts)
 		self.assertEqual(hosts.GetCounter(), 0)
 
@@ -145,7 +118,7 @@ class TestLocalCache(unittest.TestCase):
 			outHasError.set()
 			raise e
 
-	def test_LocalCache_2Threading(self):
+	def test_Downstream_Local_Cache_2Threading(self):
 		hosts = BuildTestingHosts(cls=CountingHosts)
 		self.assertEqual(hosts.GetCounter(), 0)
 
