@@ -11,28 +11,33 @@
 from typing import Any
 
 
-class DNSNameNotFoundError(Exception):
+class DNSException(Exception):
+	def __init__(self, reason: str) -> None:
+		super(DNSException, self).__init__(reason)
+
+
+class DNSNameNotFoundError(DNSException):
 	def __init__(self, name: str, respServer: str) -> None:
 		super(DNSNameNotFoundError, self).__init__(
 			f'DNS name "{name}" not found by "{respServer}"'
 		)
 
 
-class DNSZeroAnswerError(Exception):
+class DNSZeroAnswerError(DNSException):
 	def __init__(self, name: str) -> None:
 		super(DNSZeroAnswerError, self).__init__(
 			f'DNS name "{name}" has zero answer'
 		)
 
 
-class DNSRequestRefusedError(Exception):
+class DNSRequestRefusedError(DNSException):
 	def __init__(self, sendAddr: Any, toAddr: Any) -> None:
 		super(DNSRequestRefusedError, self).__init__(
 			f'DNS request from "{sendAddr}" to "{toAddr}" has been refused'
 		)
 
 
-class DNSServerFaultError(Exception):
+class DNSServerFaultError(DNSException):
 	def __init__(self, reason: str) -> None:
 		super(DNSServerFaultError, self).__init__(reason)
 

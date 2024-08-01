@@ -14,8 +14,10 @@ from .Downstream.TestLocalCache import TestLocalCache
 from .Downstream.TestLocalHosts import TestLocalHosts
 
 from .Downstream.TestLogicalFailover import TestLogicalFailover
+from .Downstream.TestLogicalLimitConcurrentReq import TestLogicalLimitConcurrentReq
 from .Downstream.TestLogicalQuestionRule import TestLogicalQuestionRule
 from .Downstream.TestLogicalQuestionRuleSet import TestLogicalQuestionRuleSet
+from .Downstream.TestLogicalRaiseExcept import TestLogicalRaiseExcept
 from .Downstream.TestLogicalRandomChoice import TestLogicalRandomChoice
 
 from .Downstream.TestRemoteEndpoint import TestRemoteEndpoint

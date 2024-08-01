@@ -48,7 +48,8 @@ class DownstreamHandler(object):
 
 		self.maxRecDepth = maxRecDepth
 
-		self.logger = logging.getLogger(f'{__name__}.{self.__class__.__name__}')
+		self._clsName = f'{__name__}.{self.__class__.__name__}'
+		self.logger = logging.getLogger(self._clsName)
 
 	def CheckRecursionDepth(
 		self,

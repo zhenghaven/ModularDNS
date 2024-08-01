@@ -54,8 +54,6 @@ class Hosts(QuickLookup):
 		self.lut = {}
 		self.ttl = ttl
 
-		self._clsName = f'{__name__}.{self.__class__.__name__}'
-
 	def AddRecord(
 		self,
 		domain: str,
