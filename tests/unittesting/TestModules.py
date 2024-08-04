@@ -8,6 +8,8 @@
 ###
 
 
+from .TestModuleManagerLoaders import TestModuleManagerLoaders
+
 from .Downstream.TestStackDepth import TestStackDepth
 
 from .Downstream.TestLocalCache import TestLocalCache
