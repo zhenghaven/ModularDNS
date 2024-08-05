@@ -10,6 +10,7 @@
 
 from .TestModuleManagerLoaders import TestModuleManagerLoaders
 
+from .Downstream.TestDownstreamCollection import TestDownstreamCollection
 from .Downstream.TestStackDepth import TestStackDepth
 
 from .Downstream.TestLocalCache import TestLocalCache

@@ -10,11 +10,14 @@
 
 from ...ModuleManager import ModuleManager
 
+from .Endpoint import Endpoint, StaticEndpoint
 from .HTTPS import HTTPS
 from .UDP import UDP
 
 
 MODULE_MGR = ModuleManager()
+MODULE_MGR.RegisterModule('Endpoint', Endpoint)
+MODULE_MGR.RegisterModule('StaticEndpoint', StaticEndpoint)
 MODULE_MGR.RegisterModule('HTTPS', HTTPS)
 MODULE_MGR.RegisterModule('UDP', UDP)
 
