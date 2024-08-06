@@ -14,6 +14,7 @@ from typing import Dict, List, Tuple, Union
 
 import dns.message
 
+from ..ModuleManager import ModuleManager
 from ..MsgEntry import MsgEntry, QuestionEntry
 from .Handler import DownstreamHandler
 from .HandlerByQuestion import HandlerByQuestion
@@ -83,6 +84,35 @@ class DownstreamCollection(object):
 
 	__endpointStore: Dict[str, Endpoint]
 
+	@classmethod
+	def FromConfig(
+		cls,
+		moduleMgr: ModuleManager,
+		config: dict
+	) -> 'DownstreamCollection':
+		dCollection = cls()
+
+		for item in config['items']:
+			modCls = moduleMgr.GetModule(item['module'])
+			modName = item['name']
+			modConfig: dict = item['config']
+
+			modInst = modCls.FromConfig(
+				dCollection=dCollection,
+				**modConfig
+			)
+
+			if isinstance(modInst, Endpoint):
+				dCollection.AddEndpoint(modName, modInst)
+			elif isinstance(modInst, DownstreamHandler):
+				dCollection.AddHandler(modName, modInst)
+			else:
+				raise TypeError(
+					f'Unsupported module type "{modInst.__class__.__name__}"'
+				)
+
+		return dCollection
+
 	def __init__(self) -> None:
 		super(DownstreamCollection, self).__init__()
 
@@ -92,6 +122,12 @@ class DownstreamCollection(object):
 		self.__stQuickLookupLut = {}
 
 		self.__endpointStore = {}
+
+	def GetNumOfHandlers(self) -> int:
+		return len(self.__handlerStore)
+
+	def GetNumOfEndpoints(self) -> int:
+		return len(self.__endpointStore)
 
 	def AddHandler(
 		self,

@@ -10,6 +10,7 @@
 
 import unittest
 
+from ModularDNS.ModuleManagerLoader import MODULE_MGR
 from ModularDNS.Downstream.Remote.Endpoint import StaticEndpoint
 from ModularDNS.Downstream.DownstreamCollection import (
 	DownstreamCollection,
@@ -17,7 +18,7 @@ from ModularDNS.Downstream.DownstreamCollection import (
 	StaticSharedQuickLookup,
 )
 
-from .TestLocalHosts import BuildTestingHosts
+from .TestLocalHosts import BuildTestingHosts, TESTING_HOSTS_CONFIG
 
 
 class TestDownstreamCollection(unittest.TestCase):
@@ -142,4 +143,100 @@ class TestDownstreamCollection(unittest.TestCase):
 			isinstance(collection.GetEndpoint('dns-google'), StaticEndpoint)
 		)
 		self.assertEqual(collection.GetEndpoint('dns-google'), endpoint)
+
+	def test_Downstream_DownstreamCollection_03FromConfig(self):
+		downConfig = {
+			'items': [
+				{
+					'module': 'Downstream.Local.Hosts',
+					'name': 'hosts',
+					'config': {
+						'config': TESTING_HOSTS_CONFIG
+					}
+				},
+				{
+					'module': 'Downstream.Remote.StaticEndpoint',
+					'name': 'google',
+					'config': {
+						'uri': 'https://dns.google',
+						'resolver': 's:hosts'
+					}
+				},
+				{
+					'module': 'Downstream.Remote.StaticEndpoint',
+					'name': 'cloudflare',
+					'config': {
+						'uri': 'https://one.one.one.one',
+						'resolver': 's:hosts'
+					}
+				},
+				{
+					'module': 'Downstream.Remote.ByProtocol',
+					'name': 'doh_google',
+					'config': {
+						'endpoint': 'google',
+					}
+				},
+				{
+					'module': 'Downstream.Remote.ByProtocol',
+					'name': 'doh_cloudflare',
+					'config': {
+						'endpoint': 'cloudflare',
+					}
+				},
+				{
+					'module': 'Downstream.Logical.RandomChoice',
+					'name': 'outbound_doh',
+					'config': {
+						'handlerList': ['s:doh_google', 's:doh_cloudflare'],
+						'weightList': [50, 50]
+					}
+				},
+				{
+					'module': 'Downstream.Logical.QuestionRuleSet',
+					'name': 'outbound_rules',
+					'config': {
+						'ruleAndHandlers': {
+							'default': 's:outbound_doh'
+						}
+					}
+				},
+				{
+					'module': 'Downstream.Local.Cache',
+					'name': 'outbound_cache',
+					'config': {
+						'fallback': 's:outbound_rules'
+					}
+				},
+				{
+					'module': 'Downstream.Logical.Failover',
+					'name': 'hosts_or_cache',
+					'config': {
+						'initialHandler': 's:hosts',
+						'failoverHandler': 's:outbound_cache',
+						'exceptList': [
+							'DNSNameNotFoundError',
+							'DNSZeroAnswerError',
+						]
+					}
+				},
+				{
+					'module': 'Downstream.Logical.LimitConcurrentReq',
+					'name': 'num_req_firwall',
+					'config': {
+						'targetHandler': 's:hosts_or_cache',
+						'maxNumConcurrentReq': 500,
+						'blocking': False
+					}
+				}
+			]
+		}
+
+		collection = DownstreamCollection.FromConfig(
+			moduleMgr=MODULE_MGR,
+			config=downConfig
+		)
+		self.assertIsInstance(collection, DownstreamCollection)
+		self.assertEqual(collection.GetNumOfHandlers(), 8)
+		self.assertEqual(collection.GetNumOfEndpoints(), 2)
 
