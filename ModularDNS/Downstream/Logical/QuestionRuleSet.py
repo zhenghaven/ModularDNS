@@ -13,6 +13,7 @@ import heapq
 from typing import Dict, List, Tuple
 
 from .QuestionRule import Rule, RuleFromStr
+from ..DownstreamCollection import DownstreamCollection
 from ..QuickLookup import QuickLookup
 from ..HandlerByQuestion import HandlerByQuestion
 
@@ -20,6 +21,19 @@ from ...MsgEntry import MsgEntry, QuestionEntry
 
 
 class QuestionRuleSet(QuickLookup):
+
+	@classmethod
+	def FromConfig(
+		cls,
+		dCollection: DownstreamCollection,
+		ruleAndHandlers: Dict[str, str],
+	) -> 'QuestionRuleSet':
+		return cls(
+			ruleAndHandlers={
+				ruleStr: dCollection.GetHandlerByQuestion(handlerStr)
+				for ruleStr, handlerStr in ruleAndHandlers.items()
+			}
+		)
 
 	def __init__(
 		self,

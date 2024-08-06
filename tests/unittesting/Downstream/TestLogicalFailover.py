@@ -15,6 +15,7 @@ import dns.name
 import dns.rdataclass
 import dns.rdatatype
 
+from ModularDNS.Downstream.DownstreamCollection import DownstreamCollection
 from ModularDNS.Downstream.Logical.Failover import Failover
 from ModularDNS.MsgEntry.QuestionEntry import QuestionEntry
 
@@ -29,7 +30,7 @@ class TestLogicalFailover(unittest.TestCase):
 	def tearDown(self):
 		pass
 
-	def test_Downstream_Logical_FailOver_1Failover(self):
+	def test_Downstream_Logical_FailOver_01Failover(self):
 		hosts1 = BuildTestingHosts(cls=CountingHosts)
 		hosts2 = BuildTestingHosts(cls=CountingHosts)
 
@@ -87,4 +88,19 @@ class TestLogicalFailover(unittest.TestCase):
 		self.assertEqual(len(ans2), 1)
 		addr2 = ans2[0].GetAddresses()
 		self.assertEqual(addr2, [test2Addr])
+
+	def test_Downstream_Logical_FailOver_02FromConfig(self):
+		hosts1 = BuildTestingHosts()
+		hosts2 = BuildTestingHosts()
+		dCollection = DownstreamCollection()
+		dCollection.AddHandler('hosts1', hosts1)
+		dCollection.AddHandler('hosts2', hosts2)
+
+		failover = Failover.FromConfig(
+			dCollection=dCollection,
+			initialHandler='s:hosts1',
+			failoverHandler='s:hosts2',
+			exceptList=Failover.DEFAULT_EXCEPT_STR_LIST,
+		)
+		self.assertIsInstance(failover, Failover)
 

@@ -12,22 +12,46 @@ from typing import List, Tuple, Type
 
 from ... import Exceptions as _ModularDNSExceptions
 from ...MsgEntry import MsgEntry, QuestionEntry
+from ..DownstreamCollection import DownstreamCollection
 from ..QuickLookup import QuickLookup
 from ..HandlerByQuestion import HandlerByQuestion
 
 
 class Failover(QuickLookup):
 
+	DEFAULT_EXCEPT_LIST: List[Type[Exception]] = [
+		_ModularDNSExceptions.DNSNameNotFoundError,
+		_ModularDNSExceptions.DNSRequestRefusedError,
+		_ModularDNSExceptions.DNSServerFaultError,
+		_ModularDNSExceptions.DNSZeroAnswerError,
+	]
+
+	DEFAULT_EXCEPT_STR_LIST: List[str] = [
+		cls.__name__ for cls in DEFAULT_EXCEPT_LIST
+	]
+
+	@classmethod
+	def FromConfig(
+		cls,
+		dCollection: DownstreamCollection,
+		initialHandler: str,
+		failoverHandler: str,
+		exceptList: List[str] = DEFAULT_EXCEPT_STR_LIST
+	) -> 'Failover':
+		return cls(
+			initialHandler=dCollection.GetHandlerByQuestion(initialHandler),
+			failoverHandler=dCollection.GetHandlerByQuestion(failoverHandler),
+			exceptList=[
+				_ModularDNSExceptions.GetExceptionByName(exceptName)
+				for exceptName in exceptList
+			],
+		)
+
 	def __init__(
 		self,
 		initialHandler: HandlerByQuestion,
 		failoverHandler: HandlerByQuestion,
-		exceptList: List[Type[Exception]] = [
-			_ModularDNSExceptions.DNSNameNotFoundError,
-			_ModularDNSExceptions.DNSRequestRefusedError,
-			_ModularDNSExceptions.DNSServerFaultError,
-			_ModularDNSExceptions.DNSZeroAnswerError,
-		]
+		exceptList: List[Type[Exception]] = DEFAULT_EXCEPT_LIST
 	) -> None:
 		super(Failover, self).__init__()
 

@@ -11,19 +11,35 @@
 import itertools
 import random
 
-from typing import List, Tuple, Union
+from typing import List, Optional, Tuple
 
 from ...MsgEntry import MsgEntry, QuestionEntry
+from ..DownstreamCollection import DownstreamCollection
 from ..QuickLookup import QuickLookup
 from ..HandlerByQuestion import HandlerByQuestion
 
 
 class RandomChoice(QuickLookup):
 
+	@classmethod
+	def FromConfig(
+		cls,
+		dCollection: DownstreamCollection,
+		handlerList: List[str],
+		weightList: Optional[List[int]] = None,
+	) -> 'RandomChoice':
+		return cls(
+			handlerList=[
+				dCollection.GetHandlerByQuestion(handlerStr)
+				for handlerStr in handlerList
+			],
+			weightList=weightList,
+		)
+
 	def __init__(
 		self,
 		handlerList: List[HandlerByQuestion],
-		weightList: Union[List[int], None] = None,
+		weightList: Optional[List[int]] = None,
 	) -> None:
 		super(RandomChoice, self).__init__()
 
@@ -33,7 +49,7 @@ class RandomChoice(QuickLookup):
 		self.handlerList = handlerList
 
 		if weightList is None:
-			self.weightList = [1] * len(handlerList)
+			weightList = [1] * len(handlerList)
 
 		if len(weightList) != len(handlerList):
 			raise ValueError(

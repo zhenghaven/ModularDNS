@@ -12,10 +12,25 @@ from typing import List, Tuple, Type
 
 from ... import Exceptions as _ModularDNSExceptions
 from ...MsgEntry import MsgEntry, QuestionEntry
+from ..DownstreamCollection import DownstreamCollection
 from ..QuickLookup import QuickLookup
 
 
 class RaiseExcept(QuickLookup):
+
+	@classmethod
+	def FromConfig(
+		cls,
+		dCollection: DownstreamCollection,
+		exceptToRaise: str,
+		exceptArgs: List = [],
+		exceptKwargs: dict = {},
+	) -> 'RaiseExcept':
+		return cls(
+			exceptToRaise=_ModularDNSExceptions.GetExceptionByName(exceptToRaise),
+			exceptArgs=tuple(exceptArgs),
+			exceptKwargs=exceptKwargs,
+		)
 
 	def __init__(
 		self,

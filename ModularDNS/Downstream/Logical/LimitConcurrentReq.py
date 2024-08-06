@@ -14,11 +14,26 @@ from typing import List, Tuple
 
 from ... import Exceptions as _ModularDNSExceptions
 from ...MsgEntry import MsgEntry, QuestionEntry
+from ..DownstreamCollection import DownstreamCollection
 from ..QuickLookup import QuickLookup
 from ..HandlerByQuestion import HandlerByQuestion
 
 
 class LimitConcurrentReq(QuickLookup):
+
+	@classmethod
+	def FromConfig(
+		cls,
+		dCollection: DownstreamCollection,
+		targetHandler: str,
+		maxNumConcurrentReq: int,
+		blocking: bool = False,
+	) -> 'LimitConcurrentReq':
+		return cls(
+			targetHandler=dCollection.GetHandlerByQuestion(targetHandler),
+			maxNumConcurrentReq=maxNumConcurrentReq,
+			blocking=blocking,
+		)
 
 	def __init__(
 		self,

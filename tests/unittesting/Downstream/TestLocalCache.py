@@ -16,6 +16,7 @@ import dns.name
 import dns.rdataclass
 import dns.rdatatype
 
+from ModularDNS.Downstream.DownstreamCollection import DownstreamCollection
 from ModularDNS.Downstream.Local.Cache import Cache
 from ModularDNS.MsgEntry.AnsEntry import AnsEntry
 from ModularDNS.MsgEntry.QuestionEntry import QuestionEntry
@@ -31,7 +32,7 @@ class TestLocalCache(unittest.TestCase):
 	def tearDown(self):
 		pass
 
-	def test_Downstream_Local_Cache_1Basic(self):
+	def test_Downstream_Local_Cache_01Basic(self):
 		hosts: CountingHosts = BuildTestingHosts(cls=CountingHosts)
 		self.assertEqual(hosts.GetCounter(), 0)
 
@@ -118,7 +119,7 @@ class TestLocalCache(unittest.TestCase):
 			outHasError.set()
 			raise e
 
-	def test_Downstream_Local_Cache_2Threading(self):
+	def test_Downstream_Local_Cache_02Threading(self):
 		hosts = BuildTestingHosts(cls=CountingHosts)
 		self.assertEqual(hosts.GetCounter(), 0)
 
@@ -159,4 +160,16 @@ class TestLocalCache(unittest.TestCase):
 		# time and they all miss the cache.
 		# But that's it, all other lookups are going to hit the cache.
 		self.assertLessEqual(hosts.GetCounter(), numOfThreads)
+
+	def test_Downstream_Local_Cache_03FromConfig(self):
+		hosts = BuildTestingHosts()
+		dCollection = DownstreamCollection()
+		dCollection.AddHandler('hosts', hosts)
+
+		cache = Cache.FromConfig(
+			dCollection=dCollection,
+			fallback='s:hosts',
+			defaultTTL=1.0
+		)
+		self.assertIsInstance(cache, Cache)
 

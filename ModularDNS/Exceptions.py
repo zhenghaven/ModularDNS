@@ -8,7 +8,7 @@
 ###
 
 
-from typing import Any
+from typing import Any, Type
 
 
 class DNSException(Exception):
@@ -40,4 +40,20 @@ class DNSRequestRefusedError(DNSException):
 class DNSServerFaultError(DNSException):
 	def __init__(self, reason: str) -> None:
 		super(DNSServerFaultError, self).__init__(reason)
+
+
+EXCEPTION_MAP = {
+	DNSException.__name__:           DNSException,
+	DNSNameNotFoundError.__name__:   DNSNameNotFoundError,
+	DNSZeroAnswerError.__name__:     DNSZeroAnswerError,
+	DNSRequestRefusedError.__name__: DNSRequestRefusedError,
+	DNSServerFaultError.__name__:    DNSServerFaultError,
+}
+
+
+def GetExceptionByName(name: str) -> Type[DNSException]:
+	if name not in EXCEPTION_MAP:
+		raise KeyError(f'No such exception "{name}"')
+	else:
+		return EXCEPTION_MAP[name]
 

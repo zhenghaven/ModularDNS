@@ -16,6 +16,7 @@ from CacheLib.TTL import Interfaces as _CLTTLInterfaces
 from CacheLib.TTL import MultiKeyMultiTTLValueCache
 
 from ...MsgEntry import AnsEntry, MsgEntry, QuestionEntry
+from ..DownstreamCollection import DownstreamCollection
 from ..HandlerByQuestion import HandlerByQuestion
 from ..QuickLookup import QuickLookup
 
@@ -75,6 +76,18 @@ class CacheItem(_CLTTLInterfaces.KeyValueItem):
 class Cache(QuickLookup):
 
 	DEFAULT_TTL = CacheItem.DEFAULT_TTL
+
+	@classmethod
+	def FromConfig(
+		cls,
+		dCollection: DownstreamCollection,
+		fallback: str,
+		defaultTTL: float = DEFAULT_TTL,
+	) -> 'Cache':
+		return cls(
+			fallback=dCollection.GetHandlerByQuestion(fallback),
+			defaultTTL=defaultTTL,
+		)
 
 	def __init__(
 		self,

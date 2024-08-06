@@ -15,6 +15,7 @@ import dns.name
 import dns.rdataclass
 import dns.rdatatype
 
+from ModularDNS.Downstream.DownstreamCollection import DownstreamCollection
 from ModularDNS.Downstream.Logical import QuestionRuleSet
 from ModularDNS.MsgEntry.QuestionEntry import QuestionEntry
 
@@ -29,7 +30,7 @@ class TestLogicalQuestionRuleSet(unittest.TestCase):
 	def tearDown(self):
 		pass
 
-	def test_Downstream_Logical_QuestionRuleSet_1RuleMatching(self):
+	def test_Downstream_Logical_QuestionRuleSet_01RuleMatching(self):
 		hosts1 = BuildTestingHosts(cls=CountingHosts)
 		hosts2 = BuildTestingHosts(cls=CountingHosts)
 
@@ -67,7 +68,7 @@ class TestLogicalQuestionRuleSet(unittest.TestCase):
 		with self.assertRaises(RuntimeError):
 			matchedHandler = ruleSet.MatchHandler(question3)
 
-	def test_Downstream_Logical_QuestionRuleSet_2QuestionHandling(self):
+	def test_Downstream_Logical_QuestionRuleSet_02QuestionHandling(self):
 		hosts1 = BuildTestingHosts(cls=CountingHosts)
 		hosts2 = BuildTestingHosts(cls=CountingHosts)
 
@@ -117,4 +118,20 @@ class TestLogicalQuestionRuleSet(unittest.TestCase):
 		addr = [str(x) for x in addr]
 		self.assertIn('123.132.213.231', addr)
 		self.assertEqual(hosts2.GetCounter(), 1)
+
+	def test_Downstream_Logical_QuestionRuleSet_03FromConfig(self):
+		hosts1 = BuildTestingHosts(cls=CountingHosts)
+		hosts2 = BuildTestingHosts(cls=CountingHosts)
+		dCollection = DownstreamCollection()
+		dCollection.AddHandler('hosts1', hosts1)
+		dCollection.AddHandler('hosts2', hosts2)
+
+		ruleSet = QuestionRuleSet.QuestionRuleSet.FromConfig(
+			dCollection=dCollection,
+			ruleAndHandlers={
+				'sub:->>google.com':  's:hosts1',
+				'full:->>google.com': 's:hosts2',
+			}
+		)
+		self.assertIsInstance(ruleSet, QuestionRuleSet.QuestionRuleSet)
 

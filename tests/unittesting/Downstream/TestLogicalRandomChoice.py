@@ -15,6 +15,7 @@ import dns.name
 import dns.rdataclass
 import dns.rdatatype
 
+from ModularDNS.Downstream.DownstreamCollection import DownstreamCollection
 from ModularDNS.Downstream.Logical.RandomChoice import RandomChoice
 from ModularDNS.MsgEntry.QuestionEntry import QuestionEntry
 
@@ -29,7 +30,7 @@ class TestLogicalRandomChoice(unittest.TestCase):
 	def tearDown(self):
 		pass
 
-	def test_Downstream_Logical_RandomChoice_1RandomChoice(self):
+	def test_Downstream_Logical_RandomChoice_01RandomChoice(self):
 		hosts1 = BuildTestingHosts(cls=CountingHosts)
 		hosts2 = BuildTestingHosts(cls=CountingHosts)
 
@@ -82,4 +83,24 @@ class TestLogicalRandomChoice(unittest.TestCase):
 		hosts2CounterUpperBound = testRepeatTimes * 0.30 + testRepeatTimes * 0.15
 		self.assertGreaterEqual(hosts2Counter, hosts2CounterLowerBound)
 		self.assertLessEqual(hosts2Counter, hosts2CounterUpperBound)
+
+	def test_Downstream_Logical_RandomChoice_02FromConfig(self):
+		hosts1 = BuildTestingHosts(cls=CountingHosts)
+		hosts2 = BuildTestingHosts(cls=CountingHosts)
+		dCollection = DownstreamCollection()
+		dCollection.AddHandler('hosts1', hosts1)
+		dCollection.AddHandler('hosts2', hosts2)
+
+		randomChoice1 = RandomChoice.FromConfig(
+			dCollection=dCollection,
+			handlerList=['s:hosts1', 's:hosts2'],
+		)
+		self.assertIsInstance(randomChoice1, RandomChoice)
+
+		randomChoice2 = RandomChoice.FromConfig(
+			dCollection=dCollection,
+			handlerList=['s:hosts1', 's:hosts2'],
+			weightList=[70, 30],
+		)
+		self.assertIsInstance(randomChoice2, RandomChoice)
 

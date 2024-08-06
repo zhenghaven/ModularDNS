@@ -19,6 +19,7 @@ import dns.rdataclass
 import dns.rdatatype
 
 from ModularDNS.Exceptions import DNSRequestRefusedError
+from ModularDNS.Downstream.DownstreamCollection import DownstreamCollection
 from ModularDNS.Downstream.Logical import LimitConcurrentReq
 from ModularDNS.MsgEntry.QuestionEntry import QuestionEntry
 
@@ -99,4 +100,17 @@ class TestLogicalLimitConcurrentReq(unittest.TestCase):
 		# and among them, `numOfThreads - limitNum` will be rejected and
 		# appended with 1
 		self.assertEqual(sum(self._rejected), numOfThreads - limitNum)
+
+	def test_Downstream_Logical_LimitConcurrentReq_02FromConfig(self):
+		hosts1 = BuildTestingHosts()
+		dCollection = DownstreamCollection()
+		dCollection.AddHandler('hosts1', hosts1)
+
+		limitHandler = LimitConcurrentReq.LimitConcurrentReq.FromConfig(
+			dCollection=dCollection,
+			targetHandler='s:hosts1',
+			maxNumConcurrentReq=2,
+			blocking=False,
+		)
+		self.assertIsInstance(limitHandler, LimitConcurrentReq.LimitConcurrentReq)
 

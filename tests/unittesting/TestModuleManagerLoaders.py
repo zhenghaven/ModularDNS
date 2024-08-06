@@ -35,7 +35,7 @@ class TestModuleManagerLoaders(unittest.TestCase):
 	def tearDown(self):
 		pass
 
-	def test_ModuleManagerLoader_HandlerModules(self):
+	def test_ModuleManagerLoader_01RegisterAndGetModule(self):
 		self.assertEqual(MODULE_MGR.GetModule('Downstream.Local.Cache'), Cache)
 		self.assertEqual(MODULE_MGR.GetModule('Downstream.Local.Hosts'), Hosts)
 		self.assertEqual(MODULE_MGR.GetModule('Downstream.Logical.Failover'), Failover)

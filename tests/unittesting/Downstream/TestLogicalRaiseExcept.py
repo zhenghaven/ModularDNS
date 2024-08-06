@@ -15,6 +15,7 @@ import dns.rdataclass
 import dns.rdatatype
 
 from ModularDNS.Exceptions import DNSNameNotFoundError
+from ModularDNS.Downstream.DownstreamCollection import DownstreamCollection
 from ModularDNS.Downstream.Logical import RaiseExcept
 from ModularDNS.MsgEntry.QuestionEntry import QuestionEntry
 
@@ -65,4 +66,27 @@ class TestLogicalRaiseExcept(unittest.TestCase):
 				senderAddr=('localhost', 0),
 				recDepthStack=[],
 			)
+
+	def test_Downstream_Logical_RaiseExcept_02FromConfig(self):
+		dCollection = DownstreamCollection()
+
+		raiseExceptHandler1 = RaiseExcept.RaiseExcept.FromConfig(
+			dCollection=dCollection,
+			exceptToRaise='DNSNameNotFoundError',
+			exceptKwargs={
+				'name': 'test1.example.com',
+				'respServer': 'TestLogicalRaiseExcept',
+			}
+		)
+		self.assertIsInstance(raiseExceptHandler1, RaiseExcept.RaiseExcept)
+
+		raiseExceptHandler2 = RaiseExcept.RaiseExcept.FromConfig(
+			dCollection=dCollection,
+			exceptToRaise='DNSNameNotFoundError',
+			exceptArgs=[
+				'test1.example.com',
+				'TestLogicalRaiseExcept',
+			]
+		)
+		self.assertIsInstance(raiseExceptHandler2, RaiseExcept.RaiseExcept)
 
