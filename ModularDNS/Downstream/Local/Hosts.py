@@ -20,6 +20,7 @@ import dns.rdatatype
 
 from ...Exceptions import DNSNameNotFoundError, DNSZeroAnswerError
 from ...MsgEntry import AnsEntry, MsgEntry, QuestionEntry
+from ..DownstreamCollection import DownstreamCollection
 from ..QuickLookup import QuickLookup
 
 
@@ -31,7 +32,11 @@ class Hosts(QuickLookup):
 	DEFAULT_TTL = 3600
 
 	@classmethod
-	def FromConfig(cls, config: dict) -> 'Hosts':
+	def FromConfig(
+		cls,
+		dCollection: DownstreamCollection,
+		config: dict
+	) -> 'Hosts':
 		ttl = config.get('ttl', cls.DEFAULT_TTL)
 		records: List[ dict ] = config.get('records', list())
 		inst = cls(ttl=ttl)

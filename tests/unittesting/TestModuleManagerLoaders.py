@@ -21,6 +21,7 @@ from ModularDNS.Downstream.Logical.LimitConcurrentReq import LimitConcurrentReq
 from ModularDNS.Downstream.Logical.QuestionRuleSet import QuestionRuleSet
 from ModularDNS.Downstream.Logical.RaiseExcept import RaiseExcept
 from ModularDNS.Downstream.Logical.RandomChoice import RandomChoice
+from ModularDNS.Downstream.Remote.ByProtocol import ByProtocol
 from ModularDNS.Downstream.Remote.Endpoint import Endpoint, StaticEndpoint
 from ModularDNS.Downstream.Remote.HTTPS import HTTPS
 from ModularDNS.Downstream.Remote.UDP import UDP
@@ -42,6 +43,7 @@ class TestModuleManagerLoaders(unittest.TestCase):
 		self.assertEqual(MODULE_MGR.GetModule('Downstream.Logical.QuestionRuleSet'), QuestionRuleSet)
 		self.assertEqual(MODULE_MGR.GetModule('Downstream.Logical.RaiseExcept'), RaiseExcept)
 		self.assertEqual(MODULE_MGR.GetModule('Downstream.Logical.RandomChoice'), RandomChoice)
+		self.assertEqual(MODULE_MGR.GetModule('Downstream.Remote.ByProtocol'), ByProtocol)
 		self.assertEqual(MODULE_MGR.GetModule('Downstream.Remote.Endpoint'), Endpoint)
 		self.assertEqual(MODULE_MGR.GetModule('Downstream.Remote.StaticEndpoint'), StaticEndpoint)
 		self.assertEqual(MODULE_MGR.GetModule('Downstream.Remote.HTTPS'), HTTPS)
@@ -88,6 +90,10 @@ class TestModuleManagerLoaders(unittest.TestCase):
 				MODULE_MGR.GetModule('Downstream.Logical.RandomChoice'),
 				DownstreamHandler
 			)
+		)
+		self.assertEqual(
+			MODULE_MGR.GetModule('Downstream.Remote.ByProtocol'),
+			ByProtocol
 		)
 		self.assertTrue(
 			issubclass(

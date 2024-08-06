@@ -14,6 +14,7 @@ import dns.message
 import dns.query
 
 from ...MsgEntry import AnsEntry, MsgEntry, QuestionEntry
+from ..DownstreamCollection import DownstreamCollection
 from ..Utils import CommonDNSRespHandling
 from .Endpoint import Endpoint
 from .Protocol import Protocol, _REMOTE_INFO
@@ -55,6 +56,18 @@ class UDPProtocol(Protocol):
 
 
 class UDP(Remote):
+
+	@classmethod
+	def FromConfig(
+		cls,
+		dCollection: DownstreamCollection,
+		endpoint: str,
+		timeout: float = DEFAULT_TIMEOUT,
+	) -> 'UDP':
+		return cls(
+			endpoint=dCollection.GetEndpoint(endpoint),
+			timeout=timeout
+		)
 
 	def __init__(
 		self,

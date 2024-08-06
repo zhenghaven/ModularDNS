@@ -10,6 +10,8 @@
 
 import logging
 
+from ModularDNS.Downstream.DownstreamCollection import DownstreamCollection
+from ModularDNS.Downstream.Remote.ByProtocol import ByProtocol
 from ModularDNS.Downstream.Remote.HTTPS import HTTPS
 from ModularDNS.Downstream.Remote.Endpoint import StaticEndpoint
 
@@ -25,7 +27,7 @@ class TestRemoteHTTPS(TestRemote):
 	def tearDown(self):
 		pass
 
-	def test_Downstream_Remote_HTTPS_1Lookup(self):
+	def test_Downstream_Remote_HTTPS_01Lookup(self):
 		logging.getLogger().info('')
 
 		hosts = BuildTestingHosts()
@@ -34,7 +36,7 @@ class TestRemoteHTTPS(TestRemote):
 		)
 		self.StandardLookupTest(remote=remote)
 
-	def test_Downstream_Remote_HTTPS_2Concurrent(self):
+	def test_Downstream_Remote_HTTPS_02Concurrent(self):
 		logging.getLogger().info('')
 
 		hosts = BuildTestingHosts()
@@ -50,4 +52,31 @@ class TestRemoteHTTPS(TestRemote):
 		self.assertGreater(remote.underlying.cache.NumberOfIdle(), 2)
 
 		self.ConcurrentStandardLookupTest(remote=remote, numOfThreads=5)
+
+	def test_Downstream_Remote_HTTPS_03FromConfig(self):
+		hosts = BuildTestingHosts()
+		dCollection = DownstreamCollection()
+		dCollection.AddHandler('hosts', hosts)
+		dCollection.AddEndpoint(
+			'doh_google',
+			StaticEndpoint.FromConfig(
+				dCollection=dCollection,
+				uri='https://dns.google',
+				resolver='s:hosts',
+				preferIPv6=False
+			)
+		)
+
+		remote = HTTPS.FromConfig(
+			dCollection=dCollection,
+			endpoint='doh_google',
+			timeout=1.0
+		)
+
+		remote = ByProtocol.FromConfig(
+			dCollection=dCollection,
+			endpoint='doh_google',
+			timeout=1.0
+		)
+		self.assertIsInstance(remote, HTTPS)
 

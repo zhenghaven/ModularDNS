@@ -125,6 +125,20 @@ class Endpoint(object):
 		)
 
 	@classmethod
+	def FromConfig(
+		cls,
+		dCollection: 'DownstreamCollection',
+		uri: str,
+		resolver: str,
+		preferIPv6: bool = DEFAULT_PREFFER_IPV6,
+	) -> 'Endpoint':
+		return cls.FromURI(
+			uri=uri,
+			resolver=dCollection.GetQuickLookup(resolver),
+			preferIPv6=preferIPv6,
+		)
+
+	@classmethod
 	def FromCopy(cls, other: 'Endpoint') -> 'Endpoint':
 		return cls(
 			proto=other.proto,
@@ -182,6 +196,20 @@ class Endpoint(object):
 
 
 class StaticEndpoint(Endpoint):
+
+	@classmethod
+	def FromConfig(
+		cls,
+		dCollection: 'DownstreamCollection',
+		uri: str,
+		resolver: str,
+		preferIPv6: bool = Endpoint.DEFAULT_PREFFER_IPV6,
+	) -> 'Endpoint':
+		return cls.FromURI(
+			uri=uri,
+			resolver=dCollection.GetQuickLookup(resolver),
+			preferIPv6=preferIPv6,
+		)
 
 	def GetIPAddr(
 		self,

@@ -38,7 +38,10 @@ TESTING_HOSTS_CONFIG = {
 
 
 def BuildTestingHosts(cls: Type[Hosts] = Hosts) -> Hosts:
-	hosts = cls.FromConfig(config=TESTING_HOSTS_CONFIG)
+	hosts = cls.FromConfig(
+		dCollection=None,
+		config=TESTING_HOSTS_CONFIG
+	)
 	return hosts
 
 

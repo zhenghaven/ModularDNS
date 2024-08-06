@@ -69,3 +69,21 @@ class TestRemoteHTTPSAdapters(unittest.TestCase):
 		session.mount('https://', SmartAndSecureAdapter())
 		self.AccessViaIP(session, ip, testDomain)
 
+		# it should raise exception if we try to access it with a different domain
+		testDomain2 = 'www.microsoft.com'
+		try:
+			self.AccessViaIP(session, ip, testDomain2)
+			self.fail('Expected HTTPS request to fail with different domain')
+		except Exception as e:
+			self.logger.info(f'Failed to access {testDomain2} via IP {ip} as expected: {e}')
+			pass
+
+		# it should also raise exception if we try to access it with a different IP
+		ip2 = '1.1.1.1'
+		try:
+			self.AccessViaIP(session, ip2, testDomain)
+			self.fail('Expected HTTPS request to fail with different IP')
+		except Exception as e:
+			self.logger.info(f'Failed to access {testDomain} via IP {ip2} as expected: {e}')
+			pass
+

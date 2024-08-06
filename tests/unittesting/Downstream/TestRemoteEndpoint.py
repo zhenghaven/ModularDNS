@@ -10,7 +10,8 @@
 import ipaddress
 import unittest
 
-from ModularDNS.Downstream.Remote.Endpoint import Endpoint
+from ModularDNS.Downstream.DownstreamCollection import DownstreamCollection
+from ModularDNS.Downstream.Remote.Endpoint import Endpoint, StaticEndpoint
 
 from .TestLocalHosts import BuildTestingHosts
 
@@ -23,7 +24,7 @@ class TestRemoteEndpoint(unittest.TestCase):
 	def tearDown(self):
 		pass
 
-	def test_Downstream_Remote_Endpoint_1ParseProto(self):
+	def test_Downstream_Remote_Endpoint_01ParseProto(self):
 		self.assertEqual(
 			Endpoint.ParseProto(uri='http://'),
 			('http', '')
@@ -61,7 +62,7 @@ class TestRemoteEndpoint(unittest.TestCase):
 			(Endpoint.DEFAULT_PROTO, 'ht:tp://:')
 		)
 
-	def test_Downstream_Remote_Endpoint_2ParseDomainAndPort(self):
+	def test_Downstream_Remote_Endpoint_02ParseDomainAndPort(self):
 		# ipv4
 		self.assertEqual(
 			Endpoint.ParseDomainAndPort(dnp='192.168.1.1'),
@@ -135,7 +136,7 @@ class TestRemoteEndpoint(unittest.TestCase):
 		with self.assertRaises(ValueError):
 			Endpoint.ParseDomainAndPort(dnp='[abcd://]')
 
-	def test_Downstream_Remote_Endpoint_3FromURI(self):
+	def test_Downstream_Remote_Endpoint_03FromURI(self):
 		hosts = BuildTestingHosts()
 		# ipv4
 		ep = Endpoint.FromURI(uri='https://192.168.1.1', resolver=hosts)
@@ -241,4 +242,37 @@ class TestRemoteEndpoint(unittest.TestCase):
 		with self.assertRaises(ValueError):
 			# cannot determine default port for unknown protocol
 			Endpoint.FromURI(uri='abcd://dns.google', resolver=hosts)
+
+	def test_Downstream_Remote_Endpoint_04FromConfig(self):
+		hosts = BuildTestingHosts()
+		dCollection = DownstreamCollection()
+		dCollection.AddHandler('hosts', hosts)
+
+		ep = Endpoint.FromConfig(
+			dCollection=dCollection,
+			uri='https://dns.google',
+			resolver='s:hosts',
+			preferIPv6=False
+		)
+		self.assertIn(
+			ep.GetIPAddr(recDepthStack=[]),
+			[
+				ipaddress.ip_address('8.8.8.8'),
+				ipaddress.ip_address('8.8.4.4'),
+			]
+		)
+
+		sep = StaticEndpoint.FromConfig(
+			dCollection=dCollection,
+			uri='https://dns.google',
+			resolver='s:hosts',
+			preferIPv6=True
+		)
+		self.assertIn(
+			sep.GetIPAddr(recDepthStack=[]),
+			[
+				ipaddress.ip_address('2001:4860:4860::8888'),
+				ipaddress.ip_address('2001:4860:4860::8844'),
+			]
+		)
 

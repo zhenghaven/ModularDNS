@@ -16,6 +16,7 @@ import dns.message
 import requests
 
 from ...MsgEntry import AnsEntry, MsgEntry, QuestionEntry
+from ..DownstreamCollection import DownstreamCollection
 from ..Utils import CommonDNSRespHandling
 from .ConcurrentMgr import ConcurrentMgr
 from .Endpoint import Endpoint
@@ -79,6 +80,18 @@ class ConcurrentHTTPS(ConcurrentMgr):
 
 
 class HTTPS(Remote):
+
+	@classmethod
+	def FromConfig(
+		cls,
+		dCollection: DownstreamCollection,
+		endpoint: str,
+		timeout: float = DEFAULT_TIMEOUT,
+	) -> 'HTTPS':
+		return cls(
+			endpoint=dCollection.GetEndpoint(endpoint),
+			timeout=timeout
+		)
 
 	def __init__(
 		self,
