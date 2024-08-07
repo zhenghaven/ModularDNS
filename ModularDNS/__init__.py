@@ -7,3 +7,18 @@
 # https://opensource.org/licenses/MIT.
 ###
 
+
+PACKAGE_INFO = {
+	'name': 'ModularDNS',
+	'version': '0.0.1',
+	'author': 'Haofan Zheng',
+	'url': 'https://github.com/zhenghaven/ModularDNS',
+	'license': 'MIT',
+	'description': 'A highly flexible DNS resolving service',
+}
+
+
+__version__ = PACKAGE_INFO['version']
+__author__ = PACKAGE_INFO['author']
+__license__ = PACKAGE_INFO['license']
+
