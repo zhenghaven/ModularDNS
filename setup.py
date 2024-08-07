@@ -34,6 +34,7 @@ setup(
 	python_requires  = '>=3.9',
 	install_requires = [
 		'dnspython>=2.6.0,<3.0.0',
+		'requests>=2.32.0,<3.0.0',
 		'CacheLib @ git+https://github.com/zhenghaven/PyCacheLib.git@v0.1.3'
 	],
 
