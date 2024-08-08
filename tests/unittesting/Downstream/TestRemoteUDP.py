@@ -9,9 +9,11 @@
 
 
 from ModularDNS.Downstream.DownstreamCollection import DownstreamCollection
+from ModularDNS.Downstream.Logical.RaiseExcept import RaiseExcept
 from ModularDNS.Downstream.Remote.ByProtocol import ByProtocol
 from ModularDNS.Downstream.Remote.UDP import UDP
 from ModularDNS.Downstream.Remote.Endpoint import StaticEndpoint
+from ModularDNS.Exceptions import DNSServerFaultError
 
 from .TestLocalHosts import BuildTestingHosts
 from .TestRemote import TestRemote
@@ -26,11 +28,18 @@ class TestRemoteUDP(TestRemote):
 		pass
 
 	def test_Downstream_Remote_UDP_01Lookup(self):
-		remote = UDP(
-			StaticEndpoint.FromURI(uri='udp://8.8.8.8', resolver=None),
-		)
-
-		self.StandardLookupTest(remote=remote)
+		with UDP(
+			StaticEndpoint.FromURI(
+				uri='udp://8.8.8.8',
+				resolver=RaiseExcept(
+					exceptToRaise=DNSServerFaultError,
+					exceptKwargs={
+						'reason': 'Endpoint already knows the IP address',
+					}
+				)
+			),
+		) as remote:
+			self.StandardLookupTest(remote=remote)
 
 	def test_Downstream_Remote_UDP_02FromConfig(self):
 		hosts = BuildTestingHosts()
@@ -46,16 +55,17 @@ class TestRemoteUDP(TestRemote):
 			)
 		)
 
-		remote = UDP.FromConfig(
+		with UDP.FromConfig(
 			dCollection=dCollection,
 			endpoint='udp_google',
 			timeout=1.0
-		)
+		) as remote:
+			self.assertIsInstance(remote, UDP)
 
-		remote = ByProtocol.FromConfig(
+		with ByProtocol.FromConfig(
 			dCollection=dCollection,
 			endpoint='udp_google',
 			timeout=1.0
-		)
-		self.assertIsInstance(remote, UDP)
+		) as remote:
+			self.assertIsInstance(remote, UDP)
 

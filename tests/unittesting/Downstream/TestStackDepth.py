@@ -10,6 +10,7 @@
 
 import unittest
 
+from ModularDNS.Downstream.DownstreamCollection import StaticSharedQuickLookup
 from ModularDNS.Downstream.Remote.UDP import UDP
 from ModularDNS.Downstream.Remote.Endpoint import Endpoint
 from ModularDNS.Downstream.Handler import RecursionDepthError
@@ -24,17 +25,16 @@ class TestStackDepth(unittest.TestCase):
 		pass
 
 	def test_StackDepth_1ExceedMaxDepth(self):
-		udp = UDP(
+		with UDP(
 			Endpoint.FromURI(uri='udp://dns.google', resolver=None),
-		)
+		) as remote:
 
-		# make the endpoint of the udp object point to udp
-		# so a recursive loop will be created
-		udp.underlying.endpoint.resolver = udp
+			sharedRemote = StaticSharedQuickLookup(handler=remote)
 
-		with self.assertRaises(RecursionDepthError):
-			udp.LookupIpAddr(domain='dns.google', preferIPv6=False, recDepthStack=[])
+			# make the endpoint of the udp object point to udp
+			# so a recursive loop will be created
+			remote.underlying.endpoint.resolver = sharedRemote
 
-		# remove the circular reference
-		udp.underlying.endpoint.resolver = None
+			with self.assertRaises(RecursionDepthError):
+				remote.LookupIpAddr(domain='dns.google', preferIPv6=False, recDepthStack=[])
 

@@ -31,27 +31,27 @@ class TestRemoteHTTPS(TestRemote):
 		logging.getLogger().info('')
 
 		hosts = BuildTestingHosts()
-		remote = HTTPS(
+		with HTTPS(
 			StaticEndpoint.FromURI(uri='https://dns.google', resolver=hosts),
-		)
-		self.StandardLookupTest(remote=remote)
+		) as remote:
+			self.StandardLookupTest(remote=remote)
 
 	def test_Downstream_Remote_HTTPS_02Concurrent(self):
 		logging.getLogger().info('')
 
 		hosts = BuildTestingHosts()
-		remote = HTTPS(
+		with HTTPS(
 			StaticEndpoint.FromURI(uri='https://dns.google', resolver=hosts),
-		)
+		) as remote:
 
-		self.assertEqual(len(remote.underlying.cache), 0)
+			self.assertEqual(len(remote.underlying.cache), 0)
 
-		self.ConcurrentStandardLookupTest(remote=remote, numOfThreads=10)
+			self.ConcurrentStandardLookupTest(remote=remote, numOfThreads=10)
 
-		self.assertGreater(len(remote.underlying.cache), 2)
-		self.assertGreater(remote.underlying.cache.NumberOfIdle(), 2)
+			self.assertGreater(len(remote.underlying.cache), 2)
+			self.assertGreater(remote.underlying.cache.NumberOfIdle(), 2)
 
-		self.ConcurrentStandardLookupTest(remote=remote, numOfThreads=5)
+			self.ConcurrentStandardLookupTest(remote=remote, numOfThreads=5)
 
 	def test_Downstream_Remote_HTTPS_03FromConfig(self):
 		hosts = BuildTestingHosts()
@@ -67,16 +67,17 @@ class TestRemoteHTTPS(TestRemote):
 			)
 		)
 
-		remote = HTTPS.FromConfig(
+		with HTTPS.FromConfig(
 			dCollection=dCollection,
 			endpoint='doh_google',
 			timeout=1.0
-		)
+		) as remote:
+			self.assertIsInstance(remote, HTTPS)
 
-		remote = ByProtocol.FromConfig(
+		with ByProtocol.FromConfig(
 			dCollection=dCollection,
 			endpoint='doh_google',
 			timeout=1.0
-		)
-		self.assertIsInstance(remote, HTTPS)
+		) as remote:
+			self.assertIsInstance(remote, HTTPS)
 

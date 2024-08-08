@@ -53,3 +53,7 @@ class RaiseExcept(QuickLookup):
 
 		raise self.exceptToRaise(*self.exceptArgs, **self.exceptKwargs)
 
+	def Terminate(self) -> None:
+		# nothing to terminate/cleanup
+		pass
+

@@ -83,3 +83,7 @@ class Failover(QuickLookup):
 				newRecStack,
 			)
 
+	def Terminate(self) -> None:
+		self.initialHandler.Terminate()
+		self.failoverHandler.Terminate()
+

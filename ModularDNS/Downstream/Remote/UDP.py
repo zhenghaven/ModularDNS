@@ -8,6 +8,8 @@
 ###
 
 
+import socket
+
 from typing import List, Tuple
 
 import dns.message
@@ -29,6 +31,10 @@ class UDPProtocol(Protocol):
 			timeout=timeout
 		)
 
+		self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+		self.sock.setblocking(False)
+		self.sock.settimeout(timeout)
+
 	def Query(
 		self,
 		q: dns.message.Message,
@@ -41,7 +47,8 @@ class UDPProtocol(Protocol):
 			q=q,
 			where=str(ip),
 			port=port,
-			timeout=self.timeout
+			timeout=self.timeout,
+			sock=self.sock,
 		)
 
 		return (
@@ -50,9 +57,14 @@ class UDPProtocol(Protocol):
 		)
 
 	def Terminate(self) -> None:
-		# we are using function call from dns.query
-		# nothing to stop here
-		pass
+		super(UDPProtocol, self)._Terminate()
+		try:
+			self.sock.shutdown(socket.SHUT_RDWR)
+		except:
+			# it may raise an exception if the socket is not connected
+			# but we can safely ignore it
+			pass
+		self.sock.close()
 
 
 class UDP(Remote):
@@ -108,4 +120,7 @@ class UDP(Remote):
 		ansEntries = AnsEntry.AnsEntry.FromRRSetList(dnsResp.answer)
 
 		return ansEntries
+
+	def Terminate(self) -> None:
+		self.underlying.Terminate()
 

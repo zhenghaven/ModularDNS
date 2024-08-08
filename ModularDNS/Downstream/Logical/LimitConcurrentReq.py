@@ -76,3 +76,6 @@ class LimitConcurrentReq(QuickLookup):
 		finally:
 			self.semaphore.release()
 
+	def Terminate(self) -> None:
+		self.targetHandler.Terminate()
+

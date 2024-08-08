@@ -13,9 +13,11 @@ import unittest
 
 import requests
 
+from ModularDNS.Downstream.Logical.RaiseExcept import RaiseExcept
 from ModularDNS.Downstream.Remote.UDP import UDP
 from ModularDNS.Downstream.Remote.Endpoint import Endpoint
 from ModularDNS.Downstream.Remote.HTTPSAdapters import SmartAndSecureAdapter
+from ModularDNS.Exceptions import DNSServerFaultError
 
 
 class TestRemoteHTTPSAdapters(unittest.TestCase):
@@ -47,13 +49,21 @@ class TestRemoteHTTPSAdapters(unittest.TestCase):
 
 		testDomain = 'www.google.com'
 
-		udp = UDP(
-			Endpoint.FromURI(uri='udp://8.8.8.8', resolver=None),
-		)
+		with UDP(
+			Endpoint.FromURI(
+				uri='udp://8.8.8.8',
+				resolver=RaiseExcept(
+					exceptToRaise=DNSServerFaultError,
+					exceptKwargs={
+						'reason': 'Endpoint already knows the IP address',
+					}
+				)
+			),
+		) as udp:
 
-		self.logger.debug(f'Looking up IP for domain: {testDomain}')
-		ip = udp.LookupIpAddr(domain=testDomain, preferIPv6=False, recDepthStack=[])
-		self.logger.debug(f'IP for domain: {testDomain} is {ip}')
+			self.logger.debug(f'Looking up IP for domain: {testDomain}')
+			ip = udp.LookupIpAddr(domain=testDomain, preferIPv6=False, recDepthStack=[])
+			self.logger.debug(f'IP for domain: {testDomain} is {ip}')
 
 		session = requests.Session()
 

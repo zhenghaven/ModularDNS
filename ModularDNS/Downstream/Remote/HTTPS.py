@@ -71,6 +71,7 @@ class HTTPSProtocol(Protocol):
 			)
 
 	def Terminate(self) -> None:
+		super(HTTPSProtocol, self)._Terminate()
 		self.session.close()
 
 
@@ -132,4 +133,7 @@ class HTTPS(Remote):
 		ansEntries = AnsEntry.AnsEntry.FromRRSetList(dnsResp.answer)
 
 		return ansEntries
+
+	def Terminate(self) -> None:
+		self.underlying.Terminate()
 

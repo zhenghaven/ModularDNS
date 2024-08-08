@@ -88,3 +88,14 @@ class DownstreamHandler(object):
 			'DownstreamHandler.Handle() is not implemented'
 		)
 
+	def Terminate(self) -> None:
+		raise NotImplementedError(
+			'DownstreamHandler.Terminate() is not implemented'
+		)
+
+	def __enter__(self):
+		return self
+
+	def __exit__(self, exc_type, exc_value, traceback):
+		self.Terminate()
+

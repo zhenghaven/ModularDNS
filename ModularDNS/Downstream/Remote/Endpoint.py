@@ -194,6 +194,9 @@ class Endpoint(object):
 		else:
 			return str(self.ipAddr)
 
+	def Terminate(self) -> None:
+		self.resolver.Terminate()
+
 
 class StaticEndpoint(Endpoint):
 

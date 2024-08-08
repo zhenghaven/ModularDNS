@@ -232,11 +232,11 @@ class TestDownstreamCollection(unittest.TestCase):
 			]
 		}
 
-		collection = DownstreamCollection.FromConfig(
+		with DownstreamCollection.FromConfig(
 			moduleMgr=MODULE_MGR,
 			config=downConfig
-		)
-		self.assertIsInstance(collection, DownstreamCollection)
-		self.assertEqual(collection.GetNumOfHandlers(), 8)
-		self.assertEqual(collection.GetNumOfEndpoints(), 2)
+		) as collection:
+			self.assertIsInstance(collection, DownstreamCollection)
+			self.assertEqual(collection.GetNumOfHandlers(), 8)
+			self.assertEqual(collection.GetNumOfEndpoints(), 2)
 

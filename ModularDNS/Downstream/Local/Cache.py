@@ -137,3 +137,7 @@ class Cache(QuickLookup):
 
 			return cachedItem.GetResp()
 
+	def Terminate(self) -> None:
+		self._fallback.Terminate()
+		self._cache.Terminate()
+

@@ -153,3 +153,7 @@ class Hosts(QuickLookup):
 				)
 			]
 
+	def Terminate(self) -> None:
+		# nothing to terminate/close
+		pass
+

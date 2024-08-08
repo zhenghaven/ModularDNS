@@ -41,6 +41,9 @@ class Protocol(Interfaces.Terminable):
 	) -> Tuple[dns.message.Message, _REMOTE_INFO]:
 		raise NotImplementedError('Protocol.Query() is not implemented')
 
+	def _Terminate(self) -> None:
+		self.endpoint.Terminate()
+
 	def Terminate(self) -> None:
 		raise NotImplementedError('Protocol.Terminate() is not implemented')
 

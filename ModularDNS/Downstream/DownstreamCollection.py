@@ -43,6 +43,11 @@ class StaticSharedHandler(DownstreamHandler):
 			recDepthStack,
 		)
 
+	def Terminate(self) -> None:
+		# the underlying handler is shared,
+		# thus, the true owner should be responsible for terminating it
+		pass
+
 
 class StaticSharedQuickLookup(QuickLookup):
 	'''
@@ -67,6 +72,11 @@ class StaticSharedQuickLookup(QuickLookup):
 			senderAddr,
 			recDepthStack,
 		)
+
+	def Terminate(self) -> None:
+		# the underlying handler is shared,
+		# thus, the true owner should be responsible for terminating it
+		pass
 
 
 _OBJ_NAME_PATTERN = re.compile(r'^[a-zA-Z][a-zA-Z0-9_-]+$')
@@ -215,4 +225,21 @@ class DownstreamCollection(object):
 		if endpointName not in self.__endpointStore:
 			raise KeyError(f'Endpoint "{endpointName}" not found')
 		return self.__endpointStore[endpointName]
+
+	def Terminate(self) -> None:
+		self.__stHandlerLut.clear()
+		self.__stQuickLookupLut.clear()
+		for handler in self.__handlerStore.values():
+			handler.Terminate()
+		self.__handlerStore.clear()
+
+		for endpoint in self.__endpointStore.values():
+			endpoint.Terminate()
+		self.__endpointStore.clear()
+
+	def __enter__(self):
+		return self
+
+	def __exit__(self, exc_type, exc_value, traceback):
+		self.Terminate()
 

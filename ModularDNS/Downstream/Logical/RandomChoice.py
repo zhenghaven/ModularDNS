@@ -82,3 +82,7 @@ class RandomChoice(QuickLookup):
 			newRecStack,
 		)
 
+	def Terminate(self) -> None:
+		for handler in self.handlerList:
+			handler.Terminate()
+

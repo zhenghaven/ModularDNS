@@ -90,3 +90,8 @@ class QuestionRuleSet(QuickLookup):
 			recDepthStack=newRecStack,
 		)
 
+	def Terminate(self) -> None:
+		for handler in self.lut.values():
+			handler.Terminate()
+		self.lut.clear()
+
