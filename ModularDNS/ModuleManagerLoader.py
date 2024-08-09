@@ -11,8 +11,10 @@
 from .ModuleManager import ModuleManager
 
 from .Downstream.ModuleManagerLoader import MODULE_MGR as DOWNSTREAM_MODULE_MGR
+from .Server.ModuleManagerLoader     import MODULE_MGR as SERVER_MODULE_MGR
 
 
 MODULE_MGR = ModuleManager()
 MODULE_MGR.RegisterSubModuleManager('Downstream', DOWNSTREAM_MODULE_MGR)
+MODULE_MGR.RegisterSubModuleManager('Server',     SERVER_MODULE_MGR)
 

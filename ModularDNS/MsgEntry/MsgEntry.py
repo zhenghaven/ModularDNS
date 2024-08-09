@@ -49,6 +49,9 @@ class MsgEntry(object):
 	def __str__(self) -> str:
 		return f'{self.ToDict()}'
 
+	def __repr__(self) -> str:
+		return f'{self.ToDict()}'
+
 
 def AppendToDNSMsg(dnsMsg: dns.message.Message, entry: MsgEntry,) -> None:
 	if entry.entryType == 'ANS':
