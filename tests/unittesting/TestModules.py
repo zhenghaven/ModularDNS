@@ -34,4 +34,5 @@ from .MsgEntry.TestQuestionEntry import TestQuestionEntry
 
 from .Server.TestUtils import TestUtils
 from .Server.TestUDP import TestUDP
+from .Server.TestServerCollection import TestServerCollection
 

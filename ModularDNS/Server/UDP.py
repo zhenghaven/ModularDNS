@@ -18,7 +18,11 @@ import dns.message
 
 from ..Downstream.Handler import DownstreamHandler
 from ..Downstream.DownstreamCollection import DownstreamCollection
-from .Server import CreateServerBasedOnSocketserver, PySocketServerClass, Server
+from .Server import (
+	CreateServer as _CreateServerFromPySocketServer,
+	FromPySocketServer,
+	Server
+)
 from .Utils import CommonDNSMsgHandling
 
 
@@ -49,8 +53,8 @@ class UDPHandler(socketserver.DatagramRequestHandler):
 		self.wfile.write(rawResp)
 
 
-@PySocketServerClass
-class UDPServer(socketserver.ThreadingUDPServer, Server):
+@FromPySocketServer
+class UDPServer(socketserver.ThreadingUDPServer):
 	pass
 
 
@@ -63,7 +67,7 @@ class UDP:
 		downstreamHdlr: DownstreamHandler
 	) -> Server:
 
-		return CreateServerBasedOnSocketserver(
+		return _CreateServerFromPySocketServer(
 			server_address=server_address,
 			downstreamHdlr=downstreamHdlr,
 			handlerType=UDPHandler,

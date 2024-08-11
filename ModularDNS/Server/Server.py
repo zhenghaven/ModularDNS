@@ -16,6 +16,7 @@ import uuid
 from typing import Tuple, Type
 
 from ..Downstream.Handler import DownstreamHandler
+from .PySocketServer import MitigateServeAndShutdown
 
 
 class Server:
@@ -33,7 +34,6 @@ class Server:
 		self.terminateEvent = terminateEvent
 
 		self.stateLock = threading.Lock()
-		self.hasServeLoopStarted = False
 		self.hasServeThreadStarted = False
 
 	def _ServeForever(self) -> None:
@@ -42,18 +42,7 @@ class Server:
 		)
 
 	def ServeUntilTerminate(self) -> None:
-		startServing = False
-
-		with self.stateLock:
-			if not self.terminateEvent.is_set():
-				# the `Terminate` method has not completed the first line of
-				# `self.terminateEvent.set()`, so it is safe to start serving
-				self.hasServeLoopStarted = True
-				startServing = True
-
-		# we have set the state to start serving, so we have to start serving now
-		if startServing:
-			self._ServeForever()
+		self._ServeForever()
 
 	def ThreadedServeUntilTerminate(self) -> None:
 		with self.stateLock:
@@ -92,13 +81,9 @@ class Server:
 	def Terminate(self) -> None:
 		self.terminateEvent.set()
 
-		with self.stateLock:
-			if self.hasServeLoopStarted:
-				# the `ServeUntilTerminate` method has started the serve loop
-				# so it is eventually going to start serving
-				# so it's safe to call `shutdown` method
-				self._Shutdown()
+		self._Shutdown()
 
+		with self.stateLock:
 			if self.hasServeThreadStarted:
 				# the `ThreadedServeUntilTerminate` method has started the serve
 				# thread, so we should wait for it to complete
@@ -112,37 +97,32 @@ class Server:
 		)
 
 
-class _SocketServerAndServer(socketserver.BaseServer, Server):
-	pass
+def FromPySocketServer(oriCls: Type[socketserver.BaseServer]) -> Type[Server]:
+
+	MitigatedCls: Type[socketserver.BaseServer] = MitigateServeAndShutdown(oriCls)
+
+	class __PySocketServerAndServer(MitigatedCls, Server):
+
+		def _ServeForever(self) -> None:
+			self.serve_forever()
+
+		def _Shutdown(self) -> None:
+			self.shutdown()
+
+		def _CleanUp(self) -> None:
+			self.server_close()
+
+		def GetSrcPort(self) -> int:
+			return self.server_address[1]
+
+	return __PySocketServerAndServer
 
 
-def PySocketServerClass(oriCls: Type[_SocketServerAndServer]):
-
-	def _ServeForever(self: _SocketServerAndServer) -> None:
-		self.serve_forever()
-
-	def _Shutdown(self: _SocketServerAndServer) -> None:
-		self.shutdown()
-
-	def _CleanUp(self: _SocketServerAndServer) -> None:
-		self.server_close()
-
-	def GetSrcPort(self: _SocketServerAndServer) -> int:
-		return self.server_address[1]
-
-	setattr(oriCls, '_ServeForever', _ServeForever)
-	setattr(oriCls, '_Shutdown', _Shutdown)
-	setattr(oriCls, '_CleanUp', _CleanUp)
-	setattr(oriCls, 'GetSrcPort', GetSrcPort)
-
-	return oriCls
-
-
-def CreateServerBasedOnSocketserver(
+def CreateServer(
 	server_address: Tuple[str, int],
 	downstreamHdlr: DownstreamHandler,
 	handlerType: Type[socketserver.BaseRequestHandler],
-	serverType: Type[_SocketServerAndServer],
+	serverType: Type[Server],
 ) -> Server:
 
 	serverUUID = uuid.uuid4()
