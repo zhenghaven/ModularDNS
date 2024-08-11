@@ -42,10 +42,16 @@ TESTING_HOSTS_CONFIG = {
 
 		{ 'domain': 'cname.dns.google.com',  'cname': [ 'dns.google.com.' ] },
 		{ 'domain': 'cname.cname.dns.google.com',  'cname': [ 'cname.dns.google.com.' ] },
+	],
 
-		{ 'domain': 'cname.test_not_dot.example',  'ip': [ '192.168.1.1' ] },
-		{ 'domain': 'test_not_dot.example',  'cname': [ 'cname' ] },
-	]
+	'map': {
+		'cname.test_not_dot.example': {
+			'ip': [ '192.168.1.1' ]
+		},
+		'test_not_dot.example': {
+			'cname': [ 'cname' ]
+		},
+	}
 }
 
 

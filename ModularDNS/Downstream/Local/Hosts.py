@@ -44,25 +44,20 @@ class Hosts(QuickLookup):
 		config: dict
 	) -> 'Hosts':
 		ttl = config.get('ttl', cls.DEFAULT_TTL)
-		records: List[ dict ] = config.get('records', list())
 		inst = cls(ttl=ttl)
+
+		records: List[ dict ] = config.get('records', list())
 		for record in records:
 			domain = record.get('domain', '')
 			recWoDomain: Dict[str, list] = {
 				k: v for k, v in record.items()
 				if k != 'domain'
 			}
-			for recType, recData in recWoDomain.items():
-				if recType.lower() == 'ip':
-					ipList = recData
-					for ipAddrStr in ipList:
-						ipAddr = ipaddress.ip_address(ipAddrStr)
-						inst.AddAddrRecord(domain=domain, ipAddr=ipAddr)
-				elif recType.lower() == 'cname':
-					for cname in recData:
-						inst.AddCNameRecord(domain=domain, cname=cname)
-				else:
-					raise ValueError('Unsupported record type')
+			inst._AddRecordSetFromConfig(domain=domain, recordSetMap=recWoDomain)
+
+		recMap: Dict[str, list] = config.get('map', dict())
+		for domain, recSetMap in recMap.items():
+			inst._AddRecordSetFromConfig(domain=domain, recordSetMap=recSetMap)
 
 		return inst
 
@@ -156,6 +151,23 @@ class Hosts(QuickLookup):
 			rdType=rdType,
 			rdata=rdata
 		)
+
+	def _AddRecordSetFromConfig(
+		self,
+		domain: str,
+		recordSetMap: Dict[str, list]
+	) -> None:
+		for recType, recData in recordSetMap.items():
+			if recType.lower() == 'ip':
+				ipList = recData
+				for ipAddrStr in ipList:
+					ipAddr = ipaddress.ip_address(ipAddrStr)
+					self.AddAddrRecord(domain=domain, ipAddr=ipAddr)
+			elif recType.lower() == 'cname':
+				for cname in recData:
+					self.AddCNameRecord(domain=domain, cname=cname)
+			else:
+				raise ValueError('Unsupported record type')
 
 	def GetNumDomains(self) -> int:
 		with self.lutLock:
