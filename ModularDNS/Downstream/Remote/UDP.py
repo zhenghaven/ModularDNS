@@ -25,15 +25,27 @@ from .Remote import DEFAULT_TIMEOUT, Remote
 
 class UDPProtocol(Protocol):
 
+	_IP_VER_MAP = {
+		4: socket.AF_INET,
+		6: socket.AF_INET6,
+	}
+
+	@classmethod
+	def _CreateSocket(cls, af: int, sockType: int) -> socket.socket:
+		sock = socket.socket(af, sockType)
+		sock.setblocking(False)
+		return sock
+
 	def __init__(self, endpoint: Endpoint, timeout: float) -> None:
 		super(UDPProtocol, self).__init__(
 			endpoint=endpoint,
 			timeout=timeout
 		)
 
-		self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-		self.sock.setblocking(False)
-		self.sock.settimeout(timeout)
+		self.sock = {
+			ver: self._CreateSocket(af, socket.SOCK_DGRAM)
+			for ver, af in self._IP_VER_MAP.items()
+		}
 
 	def Query(
 		self,
@@ -43,12 +55,16 @@ class UDPProtocol(Protocol):
 		ip = self.endpoint.GetIPAddr(recDepthStack=recDepthStack)
 		port = self.endpoint.port
 
+		if ip.version not in self.sock:
+			raise ValueError(f'Unsupported IP version: {ip.version}')
+		sock = self.sock[ip.version]
+
 		resp = dns.query.udp(
 			q=q,
 			where=str(ip),
 			port=port,
 			timeout=self.timeout,
-			sock=self.sock,
+			sock=sock,
 		)
 
 		return (
@@ -56,15 +72,20 @@ class UDPProtocol(Protocol):
 			(self.endpoint.GetHostName(), str(ip), port)
 		)
 
-	def Terminate(self) -> None:
-		super(UDPProtocol, self)._Terminate()
+	@classmethod
+	def _SocketShutdown(cls, sock: socket.socket) -> None:
 		try:
-			self.sock.shutdown(socket.SHUT_RDWR)
+			sock.shutdown(socket.SHUT_RDWR)
 		except:
 			# it may raise an exception if the socket is not connected
 			# but we can safely ignore it
 			pass
-		self.sock.close()
+		sock.close()
+
+	def Terminate(self) -> None:
+		super(UDPProtocol, self)._Terminate()
+		for sock in self.sock.values():
+			self._SocketShutdown(sock)
 
 
 class UDP(Remote):
