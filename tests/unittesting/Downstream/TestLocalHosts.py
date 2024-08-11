@@ -11,7 +11,13 @@
 import ipaddress
 import unittest
 
-from typing import Type
+from typing import List, Type
+
+import dns.message
+import dns.rcode
+import dns.rdata
+import dns.rdataclass
+import dns.rdatatype
 
 from ModularDNS.Downstream.Local.Hosts import Hosts
 from ModularDNS.Exceptions import DNSNameNotFoundError
@@ -33,6 +39,12 @@ TESTING_HOSTS_CONFIG = {
 		{ 'domain': 'one.one.one.one', 'ip': [ '2606:4700:4700::1111', '2606:4700:4700::1001' ] },
 
 		{ 'domain': 'dns.quad9.net',   'ip': [ '2620:fe::9', '2620:fe::fe' ] },
+
+		{ 'domain': 'cname.dns.google.com',  'cname': [ 'dns.google.com.' ] },
+		{ 'domain': 'cname.cname.dns.google.com',  'cname': [ 'cname.dns.google.com.' ] },
+
+		{ 'domain': 'cname.test_not_dot.example',  'ip': [ '192.168.1.1' ] },
+		{ 'domain': 'test_not_dot.example',  'cname': [ 'cname' ] },
 	]
 }
 
@@ -79,13 +91,13 @@ class TestLocalHosts(unittest.TestCase):
 	def tearDown(self):
 		pass
 
-	def test_Downstream_Local_Hosts_1BuildTestingHosts(self):
+	def test_Downstream_Local_Hosts_01BuildTestingHosts(self):
 		hosts = BuildTestingHosts()
 		self.assertIsInstance(hosts, Hosts)
 		self.assertEqual(hosts.ttl, 3600)
-		self.assertEqual(hosts.GetNumDomains(), 4)
+		self.assertEqual(hosts.GetNumDomains(), 8)
 
-	def test_Downstream_Local_Hosts_2Lookup(self):
+	def test_Downstream_Local_Hosts_02Lookup(self):
 		hosts = BuildTestingHosts()
 
 		# dns.google
@@ -145,7 +157,7 @@ class TestLocalHosts(unittest.TestCase):
 		ip = hosts.LookupIpAddr(domain='dns.quad9.net', preferIPv6=False, recDepthStack=[])
 		self.assertIn(ip, expIPs)
 
-	def test_Downstream_Local_Hosts_3LookupFail(self):
+	def test_Downstream_Local_Hosts_03LookupFail(self):
 		hosts = BuildTestingHosts()
 
 		# Domain doesn't exist, prefer IPv4
@@ -155,4 +167,184 @@ class TestLocalHosts(unittest.TestCase):
 		# Domain doesn't exist, prefer IPv6
 		with self.assertRaises(DNSNameNotFoundError):
 			hosts.LookupIpAddr(domain='not.exist', preferIPv6=True, recDepthStack=[])
+
+	def test_Downstream_Local_Hosts_04CNameWithDot(self):
+		hosts = BuildTestingHosts()
+
+		# cname.dns.google.com CNAME
+		question = dns.message.make_query(
+			qname='cname.dns.google.com',
+			rdclass=dns.rdataclass.IN,
+			rdtype=dns.rdatatype.CNAME,
+		)
+		answer = hosts.Handle(
+			dnsMsg=question,
+			senderAddr=('127.0.0.1', 0),
+			recDepthStack=[]
+		)
+		self.assertIsInstance(answer, dns.message.Message)
+		self.assertEqual(answer.rcode(), dns.rcode.NOERROR)
+		self.assertEqual(len(answer.answer), 1)
+		# The answer is a CNAME record
+		cnameAns = answer.answer[0]
+		self.assertEqual(cnameAns.name.to_text(), 'cname.dns.google.com.')
+		self.assertEqual(cnameAns.rdtype, dns.rdatatype.CNAME)
+		self.assertEqual(len(cnameAns), 1)
+		cnameAnsData: List[dns.rdata.Rdata] = [ x for x in cnameAns ]
+		cnameAnsDataStr: List[str] = [ x.to_text() for x in cnameAnsData ]
+		self.assertEqual(cnameAnsDataStr, [ 'dns.google.com.' ])
+
+		# cname.dns.google.com A
+		question = dns.message.make_query(
+			qname='cname.dns.google.com',
+			rdclass=dns.rdataclass.IN,
+			rdtype=dns.rdatatype.A,
+		)
+		answer = hosts.Handle(
+			dnsMsg=question,
+			senderAddr=('127.0.0.1', 0),
+			recDepthStack=[]
+		)
+		self.assertIsInstance(answer, dns.message.Message)
+		self.assertEqual(answer.rcode(), dns.rcode.NOERROR)
+		self.assertEqual(len(answer.answer), 2)
+		# The first answer is a CNAME record
+		cnameAns = answer.answer[0]
+		self.assertEqual(cnameAns.name.to_text(), 'cname.dns.google.com.')
+		self.assertEqual(cnameAns.rdtype, dns.rdatatype.CNAME)
+		self.assertEqual(len(cnameAns), 1)
+		cnameAnsData: List[dns.rdata.Rdata] = [ x for x in cnameAns ]
+		cnameAnsDataStr: List[str] = [ x.to_text() for x in cnameAnsData ]
+		self.assertEqual(cnameAnsDataStr, [ 'dns.google.com.' ])
+		# The second answer is an A record
+		aAns = answer.answer[1]
+		self.assertEqual(aAns.name.to_text(), 'dns.google.com.')
+		self.assertEqual(aAns.rdtype, dns.rdatatype.A)
+		self.assertEqual(len(aAns), 2)
+		aAnsData: List[dns.rdata.Rdata] = [ x for x in aAns ]
+		aAnsDataStr: List[str] = [ x.to_text() for x in aAnsData ]
+		self.assertEqual(
+			sorted(aAnsDataStr),
+			sorted(TESTING_HOSTS_CONFIG['records'][1]['ip'])
+		)
+		# quick lookup
+		ip = hosts.LookupIpAddr(
+			domain='cname.dns.google.com',
+			preferIPv6=False,
+			recDepthStack=[]
+		)
+		self.assertIn(str(ip), aAnsDataStr)
+
+		# cname.cname.dns.google.com CNAME
+		question = dns.message.make_query(
+			qname='cname.cname.dns.google.com',
+			rdclass=dns.rdataclass.IN,
+			rdtype=dns.rdatatype.CNAME,
+		)
+		answer = hosts.Handle(
+			dnsMsg=question,
+			senderAddr=('127.0.0.1', 0),
+			recDepthStack=[]
+		)
+		self.assertIsInstance(answer, dns.message.Message)
+		self.assertEqual(answer.rcode(), dns.rcode.NOERROR)
+		self.assertEqual(len(answer.answer), 1)
+		# The first answer is a CNAME record
+		cnameAns = answer.answer[0]
+		self.assertEqual(cnameAns.name.to_text(), 'cname.cname.dns.google.com.')
+		self.assertEqual(cnameAns.rdtype, dns.rdatatype.CNAME)
+		self.assertEqual(len(cnameAns), 1)
+		cnameAnsData: List[dns.rdata.Rdata] = [ x for x in cnameAns ]
+		cnameAnsDataStr: List[str] = [ x.to_text() for x in cnameAnsData ]
+		self.assertEqual(cnameAnsDataStr, [ 'cname.dns.google.com.' ])
+
+		# cname.cname.dns.google.com A
+		question = dns.message.make_query(
+			qname='cname.cname.dns.google.com',
+			rdclass=dns.rdataclass.IN,
+			rdtype=dns.rdatatype.A,
+		)
+		answer = hosts.Handle(
+			dnsMsg=question,
+			senderAddr=('127.0.0.1', 0),
+			recDepthStack=[]
+		)
+		self.assertIsInstance(answer, dns.message.Message)
+		self.assertEqual(answer.rcode(), dns.rcode.NOERROR)
+		self.assertEqual(len(answer.answer), 3)
+		# The first answer is a CNAME record
+		cnameAns = answer.answer[0]
+		self.assertEqual(cnameAns.name.to_text(), 'cname.cname.dns.google.com.')
+		self.assertEqual(cnameAns.rdtype, dns.rdatatype.CNAME)
+		self.assertEqual(len(cnameAns), 1)
+		cnameAnsData: List[dns.rdata.Rdata] = [ x for x in cnameAns ]
+		cnameAnsDataStr: List[str] = [ x.to_text() for x in cnameAnsData ]
+		self.assertEqual(cnameAnsDataStr, [ 'cname.dns.google.com.' ])
+		# The second answer is a CNAME record
+		cnameAns = answer.answer[1]
+		self.assertEqual(cnameAns.name.to_text(), 'cname.dns.google.com.')
+		self.assertEqual(cnameAns.rdtype, dns.rdatatype.CNAME)
+		self.assertEqual(len(cnameAns), 1)
+		cnameAnsData: List[dns.rdata.Rdata] = [ x for x in cnameAns ]
+		cnameAnsDataStr: List[str] = [ x.to_text() for x in cnameAnsData ]
+		self.assertEqual(cnameAnsDataStr, [ 'dns.google.com.' ])
+		# The third answer is an A record
+		aAns = answer.answer[2]
+		self.assertEqual(aAns.name.to_text(), 'dns.google.com.')
+		self.assertEqual(aAns.rdtype, dns.rdatatype.A)
+		self.assertEqual(len(aAns), 2)
+		aAnsData: List[dns.rdata.Rdata] = [ x for x in aAns ]
+		aAnsDataStr: List[str] = [ x.to_text() for x in aAnsData ]
+		self.assertEqual(
+			sorted(aAnsDataStr),
+			sorted(TESTING_HOSTS_CONFIG['records'][1]['ip'])
+		)
+		# quick lookup
+		ip = hosts.LookupIpAddr(
+			domain='cname.cname.dns.google.com',
+			preferIPv6=False,
+			recDepthStack=[]
+		)
+		self.assertIn(str(ip), aAnsDataStr)
+
+	def test_Downstream_Local_Hosts_05CNameWithoutDot(self):
+		hosts = BuildTestingHosts()
+
+		# test_not_dot.example
+		question = dns.message.make_query(
+			qname='test_not_dot.example',
+			rdclass=dns.rdataclass.IN,
+			rdtype=dns.rdatatype.A,
+		)
+		answer = hosts.Handle(
+			dnsMsg=question,
+			senderAddr=('127.0.0.1', 0),
+			recDepthStack=[]
+		)
+		self.assertIsInstance(answer, dns.message.Message)
+		self.assertEqual(answer.rcode(), dns.rcode.NOERROR)
+		self.assertEqual(len(answer.answer), 2)
+		# The first answer is a CNAME record
+		cnameAns = answer.answer[0]
+		self.assertEqual(cnameAns.name.to_text(), 'test_not_dot.example.')
+		self.assertEqual(cnameAns.rdtype, dns.rdatatype.CNAME)
+		self.assertEqual(len(cnameAns), 1)
+		cnameAnsData: List[dns.rdata.Rdata] = [ x for x in cnameAns ]
+		cnameAnsDataStr: List[str] = [ x.to_text() for x in cnameAnsData ]
+		self.assertEqual(cnameAnsDataStr, [ 'cname.test_not_dot.example.' ])
+		# The second answer is an A record
+		aAns = answer.answer[1]
+		self.assertEqual(aAns.name.to_text(), 'cname.test_not_dot.example.')
+		self.assertEqual(aAns.rdtype, dns.rdatatype.A)
+		self.assertEqual(len(aAns), 1)
+		aAnsData: List[dns.rdata.Rdata] = [ x for x in aAns ]
+		aAnsDataStr: List[str] = [ x.to_text() for x in aAnsData ]
+		self.assertEqual(aAnsDataStr, [ '192.168.1.1' ])
+		# quick lookup
+		ip = hosts.LookupIpAddr(
+			domain='test_not_dot.example',
+			preferIPv6=False,
+			recDepthStack=[]
+		)
+		self.assertIn(str(ip), aAnsDataStr)
 

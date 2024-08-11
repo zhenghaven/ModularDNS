@@ -37,7 +37,9 @@ class QuickLookup(HandlerByQuestion):
 		for entry in entries:
 			if entry.entryType == 'ANS':
 				ans: AnsEntry.AnsEntry = entry
-				res += ans.GetAddresses()
+				# ans.rdType could be CNAME, which we should ignore
+				if ans.rdType in [dns.rdatatype.A, dns.rdatatype.AAAA]:
+					res += ans.GetAddresses()
 
 		if len(res) == 0:
 			raise DNSZeroAnswerError(domain)

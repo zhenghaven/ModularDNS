@@ -21,6 +21,10 @@
 								]
 							},
 							{
+								"domain": "dns.google.com",
+								"cname": [ "dns.google." ]
+							},
+							{
 								"domain": "one.one.one.one",
 								"ip": [
 									"1.1.1.1",

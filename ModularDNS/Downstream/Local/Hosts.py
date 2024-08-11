@@ -12,7 +12,7 @@ import copy
 import ipaddress
 import threading
 
-from typing import List, Tuple, Union
+from typing import Dict, List, Set, Tuple, Union
 
 import dns.rdata
 import dns.rdataclass
@@ -25,6 +25,12 @@ from ..QuickLookup import QuickLookup
 
 
 GENERIC_IP_ADDR = Union[ipaddress.IPv4Address, ipaddress.IPv6Address]
+
+
+def _DottedName(name: str) -> str:
+	return (name + '.') \
+		if (name[-1] != '.') \
+			else name
 
 
 class Hosts(QuickLookup):
@@ -42,13 +48,21 @@ class Hosts(QuickLookup):
 		inst = cls(ttl=ttl)
 		for record in records:
 			domain = record.get('domain', '')
-			if 'ip' in record:
-				ipList = record.get('ip', list())
-				for ipAddrStr in ipList:
-					ipAddr = ipaddress.ip_address(ipAddrStr)
-					inst.AddAddrRecord(domain=domain, ipAddr=ipAddr)
-			else:
-				raise ValueError('Unsupported record type')
+			recWoDomain: Dict[str, list] = {
+				k: v for k, v in record.items()
+				if k != 'domain'
+			}
+			for recType, recData in recWoDomain.items():
+				if recType.lower() == 'ip':
+					ipList = recData
+					for ipAddrStr in ipList:
+						ipAddr = ipaddress.ip_address(ipAddrStr)
+						inst.AddAddrRecord(domain=domain, ipAddr=ipAddr)
+				elif recType.lower() == 'cname':
+					for cname in recData:
+						inst.AddCNameRecord(domain=domain, cname=cname)
+				else:
+					raise ValueError('Unsupported record type')
 
 		return inst
 
@@ -78,6 +92,16 @@ class Hosts(QuickLookup):
 			if rdCls not in domainLut:
 				domainLut[rdCls] = dict()
 			rdClsLut: dict = domainLut[rdCls]
+
+			# As per CNAME restrictions, A CNAME record cannot co-exist with
+			# another record for the same name.
+			if (
+				(dns.rdatatype.CNAME in rdClsLut) or
+				# We are adding a record, but a CNAME record is already present, OR
+				((rdType == dns.rdatatype.CNAME) and (len(rdClsLut) > 0))
+				# We are adding a CNAME record, but some other record is already present
+			):
+				raise TypeError('CNAME record cannot co-exist with other records')
 
 			if rdType not in rdClsLut:
 				rdClsLut[rdType] = set()
@@ -113,9 +137,118 @@ class Hosts(QuickLookup):
 			rdata=rdata
 		)
 
+	def AddCNameRecord(
+		self,
+		domain: str,
+		cname: str
+	) -> None:
+		rdCls = dns.rdataclass.IN
+		rdType = dns.rdatatype.CNAME
+		rdata = dns.rdata.from_text(
+			rdclass=rdCls,
+			rdtype=rdType,
+			tok=cname
+		)
+
+		self.AddRecord(
+			domain=domain,
+			rdCls=rdCls,
+			rdType=rdType,
+			rdata=rdata
+		)
+
 	def GetNumDomains(self) -> int:
 		with self.lutLock:
 			return len(self.lut)
+
+	def _LookupLocked(
+		self,
+		domain: str,
+		rdCls: dns.rdataclass.RdataClass,
+		rdType: dns.rdatatype.RdataType,
+		throwWhenNoDomain: bool = True,
+		throwWhenNoAns: bool = True,
+	) -> List[ AnsEntry.AnsEntry ]:
+		if domain not in self.lut:
+			if throwWhenNoDomain:
+				raise DNSNameNotFoundError(name=domain, respServer=self._clsName)
+			else:
+				return []
+
+		domainLut: dict = self.lut.get(domain, dict())
+		rdClsLut: dict = domainLut.get(rdCls, dict())
+
+		if (
+			(rdType != dns.rdatatype.CNAME) and
+			(dns.rdatatype.CNAME in rdClsLut)
+		):
+			# As per CNAME restrictions, A CNAME record cannot co-exist with
+			# another record for the same name.
+			recSet: Set[dns.rdata.Rdata] = rdClsLut[dns.rdatatype.CNAME]
+			cnameDomain: dns.rdata.Rdata = next(iter(recSet))
+			cnameDomainStr = cnameDomain.to_text()
+			if cnameDomainStr.endswith('.'):
+				cnameDomainStr = cnameDomainStr[:-1]
+			else:
+				cnameDomainStr = cnameDomainStr + '.' + domain
+
+			return [
+				AnsEntry.AnsEntry(
+					name=dns.name.from_text(domain),
+					rdCls=rdCls,
+					rdType=dns.rdatatype.CNAME,
+					dataList=[
+						dns.rdata.from_text(
+							rdclass=rdCls,
+							rdtype=dns.rdatatype.CNAME,
+							tok=_DottedName(cnameDomainStr),
+						)
+					],
+					ttl=self.ttl,
+				)
+			 ] + self._LookupLocked(
+				domain=cnameDomainStr,
+				rdCls=rdCls,
+				rdType=rdType,
+				throwWhenNoDomain=False,
+				throwWhenNoAns=False,
+			)
+		else:
+			recSet: Set[dns.rdata.Rdata] = rdClsLut.get(rdType, set())
+			if len(recSet) == 0:
+				if throwWhenNoAns:
+					raise DNSZeroAnswerError(name=domain)
+				else:
+					return []
+
+			dataList = [ copy.deepcopy(rec) for rec in recSet ]
+
+			return [
+				AnsEntry.AnsEntry(
+					name=dns.name.from_text(domain),
+					rdCls=rdCls,
+					rdType=rdType,
+					dataList=dataList,
+					ttl=self.ttl,
+				)
+			]
+
+	def Lookup(
+		self,
+		domain: str,
+		rdCls: dns.rdataclass.RdataClass,
+		rdType: dns.rdatatype.RdataType,
+		throwWhenNoDomain: bool = True,
+		throwWhenNoAns: bool = True,
+	) -> List[dns.rdata.Rdata]:
+		with self.lutLock:
+			return self._LookupLocked(
+				domain=domain,
+				rdCls=rdCls,
+				rdType=rdType,
+				throwWhenNoDomain=throwWhenNoDomain,
+				throwWhenNoAns=throwWhenNoAns,
+			)
 
 	def HandleQuestion(
 		self,
@@ -130,28 +263,13 @@ class Hosts(QuickLookup):
 
 		domain = msgEntry.GetNameStr(omitFinalDot=True)
 
-		with self.lutLock:
-			if domain not in self.lut:
-				raise DNSNameNotFoundError(name=domain, respServer=self._clsName)
-
-			domainLut: dict = self.lut.get(domain, dict())
-			rdClsLut: dict = domainLut.get(msgEntry.rdCls, dict())
-			recSet: List[dns.rdata.Rdata] = rdClsLut.get(msgEntry.rdType, set())
-
-			if len(recSet) == 0:
-				raise DNSZeroAnswerError(name=domain)
-
-			dataList = [ copy.deepcopy(rec) for rec in recSet ]
-
-			return [
-				AnsEntry.AnsEntry(
-					name=msgEntry.name,
-					rdCls=msgEntry.rdCls,
-					rdType=msgEntry.rdType,
-					dataList=dataList,
-					ttl=self.ttl,
-				)
-			]
+		return self.Lookup(
+			domain=domain,
+			rdCls=msgEntry.rdCls,
+			rdType=msgEntry.rdType,
+			throwWhenNoDomain=True,
+			throwWhenNoAns=True,
+		)
 
 	def Terminate(self) -> None:
 		# nothing to terminate/close
