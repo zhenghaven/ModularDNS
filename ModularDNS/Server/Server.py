@@ -8,6 +8,7 @@
 ###
 
 
+import ipaddress
 import logging
 import socketserver
 import threading
@@ -122,8 +123,19 @@ def CreateServer(
 	server_address: Tuple[str, int],
 	downstreamHdlr: DownstreamHandler,
 	handlerType: Type[socketserver.BaseRequestHandler],
-	serverType: Type[Server],
+	serverV4Type: Type[Server],
+	serverV6Type: Type[Server],
 ) -> Server:
+
+	serverIPVer = 6 \
+		if len(server_address[0]) == 0 else\
+			ipaddress.ip_address(server_address[0]).version
+	if serverIPVer == 4:
+		serverType = serverV4Type
+	elif serverIPVer == 6:
+		serverType = serverV6Type
+	else:
+		raise ValueError(f'Unsupported IP version: {serverIPVer}')
 
 	serverUUID = uuid.uuid4()
 	terminateEvent = threading.Event()

@@ -120,7 +120,7 @@
 				"module": "Server.UDP",
 				"name": "server_udp",
 				"config": {
-					"ip": "127.0.0.1",
+					"ip": "::1",
 					"port": 53535,
 					"downstream": "s:num_req_firewall"
 				}

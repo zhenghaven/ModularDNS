@@ -9,6 +9,7 @@
 
 
 import logging
+import socket
 import socketserver
 import threading
 
@@ -54,8 +55,12 @@ class UDPHandler(socketserver.DatagramRequestHandler):
 
 
 @FromPySocketServer
-class UDPServer(socketserver.ThreadingUDPServer):
-	pass
+class UDPServerV4(socketserver.ThreadingUDPServer):
+	address_family = socket.AF_INET
+
+@FromPySocketServer
+class UDPServerV6(socketserver.ThreadingUDPServer):
+	address_family = socket.AF_INET6
 
 
 class UDP:
@@ -71,7 +76,8 @@ class UDP:
 			server_address=server_address,
 			downstreamHdlr=downstreamHdlr,
 			handlerType=UDPHandler,
-			serverType=UDPServer,
+			serverV4Type=UDPServerV4,
+			serverV6Type=UDPServerV6,
 		)
 
 	@classmethod

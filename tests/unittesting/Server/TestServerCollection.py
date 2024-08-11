@@ -44,7 +44,7 @@ class TestServerCollection(unittest.TestCase):
 					'module': 'Server.UDP',
 					'name': 'server_udp',
 					'config': {
-						'ip': '127.0.0.1',
+						'ip': '::1',
 						'port': 0,
 						'downstream': 's:hosts',
 					}
