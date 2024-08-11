@@ -146,7 +146,7 @@ class TestDownstreamCollection(unittest.TestCase):
 
 	def test_Downstream_DownstreamCollection_03FromConfig(self):
 		downConfig = {
-			'items': [
+			'components': [
 				{
 					'module': 'Downstream.Local.Hosts',
 					'name': 'hosts',
@@ -222,7 +222,7 @@ class TestDownstreamCollection(unittest.TestCase):
 				},
 				{
 					'module': 'Downstream.Logical.LimitConcurrentReq',
-					'name': 'num_req_firwall',
+					'name': 'num_req_firewall',
 					'config': {
 						'targetHandler': 's:hosts_or_cache',
 						'maxNumConcurrentReq': 500,

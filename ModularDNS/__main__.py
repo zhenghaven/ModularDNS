@@ -11,6 +11,7 @@
 import argparse
 
 from . import PACKAGE_INFO
+from .Service import Resolver
 
 
 def main() -> None:
@@ -22,7 +23,25 @@ def main() -> None:
 		'--version',
 		action='version', version=PACKAGE_INFO['version'],
 	)
+	opArgParser = argParser.add_subparsers(
+		title='Services',
+		dest='service',
+	)
+	reolveOpArgParser = opArgParser.add_parser(
+		'resolve',
+		help='Run the DNS resolver service',
+	)
+	reolveOpArgParser.add_argument(
+		'--config', '-c',
+		type=str, required=True,
+		help='Path to the configuration file',
+	)
 	args = argParser.parse_args()
+
+	if args.service == 'resolve':
+		Resolver.Start(configPath=args.config)
+	else:
+		raise ValueError(f'Invalid service: {args.service}')
 
 
 if __name__ == '__main__':

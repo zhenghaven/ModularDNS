@@ -1,0 +1,126 @@
+{
+	"logger": {
+		"level": "debug"
+	},
+	"downstream": {
+		"components": [
+			{
+				"module": "Downstream.Local.Hosts",
+				"name": "hosts",
+				"config": {
+					"config": {
+						"ttl": 3600,
+						"records": [
+							{
+								"domain": "dns.google",
+								"ip": [
+									"8.8.8.8",
+									"8.8.4.4",
+									"2001:4860:4860::8888",
+									"2001:4860:4860::8844"
+								]
+							},
+							{
+								"domain": "one.one.one.one",
+								"ip": [
+									"1.1.1.1",
+									"1.0.0.1",
+									"2606:4700:4700::1111",
+									"2606:4700:4700::1001"
+								]
+							}
+						]
+					}
+				}
+			},
+			{
+				"module": "Downstream.Remote.StaticEndpoint",
+				"name": "e_google",
+				"config": {
+					"uri": "https://dns.google",
+					"resolver": "s:hosts"
+				}
+			},
+			{
+				"module": "Downstream.Remote.StaticEndpoint",
+				"name": "e_cloudflare",
+				"config": {
+					"uri": "https://one.one.one.one",
+					"resolver": "s:hosts"
+				}
+			},
+			{
+				"module": "Downstream.Remote.ByProtocol",
+				"name": "doh_google",
+				"config": {
+					"endpoint": "e_google"
+				}
+			},
+			{
+				"module": "Downstream.Remote.ByProtocol",
+				"name": "doh_cloudflare",
+				"config": {
+					"endpoint": "e_cloudflare"
+				}
+			},
+			{
+				"module": "Downstream.Logical.RandomChoice",
+				"name": "outbound_doh",
+				"config": {
+					"handlerList": ["s:doh_google", "s:doh_cloudflare"],
+					"weightList": [50, 50]
+				}
+			},
+			{
+				"module": "Downstream.Logical.QuestionRuleSet",
+				"name": "outbound_rules",
+				"config": {
+					"ruleAndHandlers": {
+						"default": "s:outbound_doh"
+					}
+				}
+			},
+			{
+				"module": "Downstream.Local.Cache",
+				"name": "outbound_cache",
+				"config": {
+					"fallback": "s:outbound_rules"
+				}
+			},
+			{
+				"module": "Downstream.Logical.Failover",
+				"name": "hosts_or_cache",
+				"config": {
+					"initialHandler": "s:hosts",
+					"failoverHandler": "s:outbound_cache",
+					"exceptList": [
+						"DNSNameNotFoundError",
+						"DNSZeroAnswerError"
+					]
+				}
+			},
+			{
+				"module": "Downstream.Logical.LimitConcurrentReq",
+				"name": "num_req_firewall",
+				"config": {
+					"targetHandler": "s:hosts_or_cache",
+					"maxNumConcurrentReq": 500,
+					"blocking": false
+				}
+			}
+		]
+	},
+	"server": {
+		"components": [
+			{
+				"module": "Server.UDP",
+				"name": "server_udp",
+				"config": {
+					"ip": "127.0.0.1",
+					"port": 53535,
+					"downstream": "s:num_req_firewall"
+				}
+			}
+		]
+	}
+}

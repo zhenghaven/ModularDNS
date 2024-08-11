@@ -34,7 +34,7 @@ class ServerCollection(object):
 	) -> 'ServerCollection':
 		sCollection = cls()
 
-		for item in config['items']:
+		for item in config['components']:
 			modCls = moduleMgr.GetModule(item['module'])
 			modName = item['name']
 			modConfig: dict = item['config']

@@ -27,7 +27,7 @@ class TestServerCollection(unittest.TestCase):
 
 	def test_Server_ServerCollection_01Server(self):
 		downConfig = {
-			'items': [
+			'components': [
 				{
 					'module': 'Downstream.Local.Hosts',
 					'name': 'hosts',
@@ -39,7 +39,7 @@ class TestServerCollection(unittest.TestCase):
 		}
 
 		svrConfig = {
-			'items': [
+			'components': [
 				{
 					'module': 'Server.UDP',
 					'name': 'server_udp',
