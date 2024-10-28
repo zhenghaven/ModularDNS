@@ -69,14 +69,18 @@ class ConcurrentMgr(Protocol):
 		q: dns.message.Message,
 		recDepthStack: List[ Tuple[ int, str ] ],
 	) -> Tuple[dns.message.Message, _REMOTE_INFO]:
+
+		# Get a session object from the cache
+		# and remember to put it back after use
+		# even if an exception is raised
 		session: Protocol = self.cache.Get()
-
-		resp = session.Query(
-			q=q,
-			recDepthStack=recDepthStack
-		)
-
-		self.cache.Put(session)
+		try:
+			resp = session.Query(
+				q=q,
+				recDepthStack=recDepthStack
+			)
+		finally:
+			self.cache.Put(session)
 
 		return resp
 
