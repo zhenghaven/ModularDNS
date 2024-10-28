@@ -8,6 +8,7 @@
 ###
 
 
+import logging
 import os
 import unittest
 import uuid
@@ -34,6 +35,20 @@ class TestLogicalQtAnsLog(unittest.TestCase):
 	def tearDown(self):
 		# remove the log file if exists
 		if os.path.exists(self.logFilename):
+
+			# log the file content
+			logging.getLogger().info('')
+			logger = logging.getLogger('Test-' + self.loggerName)
+			logger.info('Log file containing following content:')
+			with open(self.logFilename, 'r') as f:
+				fileContent = f.read()
+			logger.info(
+				'#################### BEGIN ####################\n' +
+				fileContent
+			)
+			logger.info('####################  END  ####################')
+
+			# remove the log file
 			os.remove(self.logFilename)
 			pass
 
@@ -46,7 +61,7 @@ class TestLogicalQtAnsLog(unittest.TestCase):
 			logPath=self.logFilename,
 			loggerName=self.loggerName,
 			logMode='w',
-			cleanLogHandler=True,
+			logOnRoot=False,
 			qtNameRegexExpr='^.*$',
 			qtCls=dns.rdataclass.ANY,
 			qtType=dns.rdatatype.ANY,
@@ -92,7 +107,7 @@ class TestLogicalQtAnsLog(unittest.TestCase):
 			logPath=self.logFilename,
 			loggerName=self.loggerName,
 			logMode='w',
-			cleanLogHandler=True,
+			logOnRoot=False,
 			qtNameRegexExpr='^.*$',
 			qtCls='ANY',
 			qtType='ANY',

@@ -27,7 +27,7 @@ class QtAnsLog(QuickLookup):
 
 	_DEFAULT_LOGGER_NAME = 'QtAnsLog'
 	_DEFAULT_LOG_MODE = 'w'
-	_DEFAULT_CLEAN_LOG_HANDLER = True
+	_DEFAULT_LOG_ON_ROOT = False
 	_DEFAULT_QT_NAME_REGEX_EXPR = r'^.*$'
 	_DEFAULT_QT_CLS  = dns.rdataclass.ANY
 	_DEFAULT_QT_TYPE = dns.rdatatype.ANY
@@ -42,7 +42,7 @@ class QtAnsLog(QuickLookup):
 		logPath: str,
 		loggerName: str = _DEFAULT_LOGGER_NAME,
 		logMode: str = _DEFAULT_LOG_MODE,
-		cleanLogHandler: bool = _DEFAULT_CLEAN_LOG_HANDLER,
+		logOnRoot: bool = _DEFAULT_LOG_ON_ROOT,
 		qtNameRegexExpr: str = _DEFAULT_QT_NAME_REGEX_EXPR,
 		qtCls: str = _DEFAULT_QT_CLS_STR,
 		qtType: str = _DEFAULT_QT_TYPE_STR,
@@ -52,7 +52,7 @@ class QtAnsLog(QuickLookup):
 			logPath=logPath,
 			loggerName=loggerName,
 			logMode=logMode,
-			cleanLogHandler=cleanLogHandler,
+			logOnRoot=logOnRoot,
 			qtNameRegexExpr=qtNameRegexExpr,
 			qtCls=dns.rdataclass.from_text(qtCls),
 			qtType=dns.rdatatype.from_text(qtType),
@@ -64,7 +64,7 @@ class QtAnsLog(QuickLookup):
 		logPath: str,
 		loggerName: str = _DEFAULT_LOGGER_NAME,
 		logMode: str = _DEFAULT_LOG_MODE,
-		cleanLogHandler: bool = _DEFAULT_CLEAN_LOG_HANDLER,
+		logOnRoot: bool = _DEFAULT_LOG_ON_ROOT,
 		qtNameRegexExpr: str = _DEFAULT_QT_NAME_REGEX_EXPR,
 		qtCls: dns.rdataclass.RdataClass = _DEFAULT_QT_CLS,
 		qtType: dns.rdatatype.RdataType = _DEFAULT_QT_TYPE,
@@ -82,13 +82,10 @@ class QtAnsLog(QuickLookup):
 		self.qtNameRegex = re.compile(self.qtNameRegexExpr)
 
 		self.QtAnsLogger = logging.getLogger(self.loggerName)
-		if cleanLogHandler:
-			existHdlrs = [ x for x in self.QtAnsLogger.handlers ]
-			for hdlr in existHdlrs:
-				self.QtAnsLogger.removeHandler(hdlr)
+		self.QtAnsLogger.propagate = True if logOnRoot else False
 		self.logHandler = logging.FileHandler(self.logPath, mode=self.logMode)
 		self.logHandler.setFormatter(logging.Formatter(fmt=Logger.DEFAULT_FMT))
-		self.logHandler.setLevel(logging.INFO)
+		self.logHandler.setLevel(logging.DEBUG)
 		self.QtAnsLogger.addHandler(self.logHandler)
 
 	def _MatchQtCls(self, qtCls: dns.rdataclass.RdataClass) -> bool:
@@ -132,14 +129,15 @@ class QtAnsLog(QuickLookup):
 					newRecStack,
 				)
 
-				self.QtAnsLogger.info(
+				self.QtAnsLogger.debug(
 					f'Question, {msgEntry}, received answer, {resp}'
 				)
 
 				return resp
 			except Exception as e:
-				self.QtAnsLogger.exception(
-					f'Question, {msgEntry}, got exception, {e}'
+				self.QtAnsLogger.debug(
+					f'Question, {msgEntry}, got exception, {e}',
+					exc_info=True
 				)
 				raise
 
