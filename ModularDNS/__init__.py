@@ -10,7 +10,7 @@
 
 PACKAGE_INFO = {
 	'name': 'ModularDNS',
-	'version': '0.1.6',
+	'version': '0.2.0',
 	'author': 'Haofan Zheng',
 	'url': 'https://github.com/zhenghaven/ModularDNS',
 	'license': 'MIT',

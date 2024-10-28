@@ -53,3 +53,7 @@ def InitializeFromConfig(config: dict) -> None:
 		logFilePath=config.get('file', None),
 	)
 
+
+DEFAULT_FMT = _DEFAULT_FMT
+DEFAULT_LVL = _DEFAULT_LVL
+

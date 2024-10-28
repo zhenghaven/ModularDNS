@@ -19,6 +19,7 @@ from .Downstream.TestLocalHosts import TestLocalHosts
 
 from .Downstream.TestLogicalFailover import TestLogicalFailover
 from .Downstream.TestLogicalLimitConcurrentReq import TestLogicalLimitConcurrentReq
+from .Downstream.TestLogicalQtAnsLog import TestLogicalQtAnsLog
 from .Downstream.TestLogicalQuestionRule import TestLogicalQuestionRule
 from .Downstream.TestLogicalQuestionRuleSet import TestLogicalQuestionRuleSet
 from .Downstream.TestLogicalRaiseExcept import TestLogicalRaiseExcept
