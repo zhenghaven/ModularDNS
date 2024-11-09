@@ -18,6 +18,7 @@ from ModularDNS.Downstream.Local.Cache import Cache
 from ModularDNS.Downstream.Local.Hosts import Hosts
 from ModularDNS.Downstream.Logical.Failover import Failover
 from ModularDNS.Downstream.Logical.LimitConcurrentReq import LimitConcurrentReq
+from ModularDNS.Downstream.Logical.QtAnsLog import QtAnsLog
 from ModularDNS.Downstream.Logical.QuestionRuleSet import QuestionRuleSet
 from ModularDNS.Downstream.Logical.RaiseExcept import RaiseExcept
 from ModularDNS.Downstream.Logical.RandomChoice import RandomChoice
@@ -42,6 +43,7 @@ class TestModuleManagerLoaders(unittest.TestCase):
 		self.assertEqual(MODULE_MGR.GetModule('Downstream.Local.Hosts'), Hosts)
 		self.assertEqual(MODULE_MGR.GetModule('Downstream.Logical.Failover'), Failover)
 		self.assertEqual(MODULE_MGR.GetModule('Downstream.Logical.LimitConcurrentReq'), LimitConcurrentReq)
+		self.assertEqual(MODULE_MGR.GetModule('Downstream.Logical.QtAnsLog'), QtAnsLog)
 		self.assertEqual(MODULE_MGR.GetModule('Downstream.Logical.QuestionRuleSet'), QuestionRuleSet)
 		self.assertEqual(MODULE_MGR.GetModule('Downstream.Logical.RaiseExcept'), RaiseExcept)
 		self.assertEqual(MODULE_MGR.GetModule('Downstream.Logical.RandomChoice'), RandomChoice)
@@ -73,6 +75,12 @@ class TestModuleManagerLoaders(unittest.TestCase):
 		self.assertTrue(
 			issubclass(
 				MODULE_MGR.GetModule('Downstream.Logical.LimitConcurrentReq'),
+				DownstreamHandler
+			)
+		)
+		self.assertTrue(
+			issubclass(
+				MODULE_MGR.GetModule('Downstream.Logical.QtAnsLog'),
 				DownstreamHandler
 			)
 		)
