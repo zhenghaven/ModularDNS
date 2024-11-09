@@ -36,23 +36,27 @@ class TestLogicalQtAnsLog(unittest.TestCase):
 		# remove the log file if exists
 		if os.path.exists(self.logFilename):
 
-			# log the file content
-			logging.getLogger().info('')
-			logger = logging.getLogger('Test-' + self.loggerName)
-			logger.info('Log file containing following content:')
-			with open(self.logFilename, 'r') as f:
-				fileContent = f.read()
-			logger.info(
-				'#################### BEGIN ####################\n' +
-				fileContent
-			)
-			logger.info('####################  END  ####################')
-
 			# remove the log file
 			os.remove(self.logFilename)
 			pass
 
+	def LogLogFileContent(self, expectContent: bool):
+		# log the file content
+		logger = logging.getLogger('Test-' + self.loggerName)
+		logger.info('Log file containing following content:')
+		with open(self.logFilename, 'r') as f:
+			fileContent = f.read()
+		logger.info(
+			'#################### BEGIN ####################\n' +
+			fileContent
+		)
+		logger.info('####################  END  ####################')
+		if expectContent:
+			self.assertGreater(len(fileContent), 0)
+
 	def test_Downstream_Logical_QtAnsLog_01Log(self):
+		logging.getLogger().info('')
+
 		hosts1 = BuildTestingHosts(cls=CountingHosts)
 
 		# create a logger for testing
@@ -62,7 +66,7 @@ class TestLogicalQtAnsLog(unittest.TestCase):
 			loggerName=self.loggerName,
 			logMode='w',
 			logOnRoot=False,
-			qtNameRegexExpr='^.*$',
+			qtNameRegexExpr='^.+[.]com$',
 			qtCls=dns.rdataclass.ANY,
 			qtType=dns.rdatatype.ANY,
 		)
@@ -95,6 +99,26 @@ class TestLogicalQtAnsLog(unittest.TestCase):
 				senderAddr=('localhost', 0),
 				recDepthStack=[],
 			)
+
+		# query for dns.google
+		question3 = QuestionEntry(
+			name=dns.name.from_text('dns.google'),
+			rdCls=dns.rdataclass.IN,
+			rdType=dns.rdatatype.A,
+		)
+		ans3 = logHandler.HandleQuestion(
+			msgEntry=question3,
+			senderAddr=('localhost', 0),
+			recDepthStack=[],
+		)
+		# test if the answer is correct
+		self.assertEqual(len(ans3), 1)
+		addr3 = ans3[0].GetAddresses()
+		self.assertIn('8.8.8.8', [ str(x) for x in addr1 ])
+
+		# make sure there are content in the log file
+		self.assertTrue(os.path.exists(self.logFilename))
+		self.LogLogFileContent(expectContent=True)
 
 	def test_Downstream_Logical_QtAnsLog_02FromConfig(self):
 		hosts1 = BuildTestingHosts()

@@ -125,20 +125,23 @@ class QtAnsLog(QuickLookup):
 			self.HandleQuestion
 		)
 
-		if self._MatchQuestion(msgEntry):
-			try:
-				resp = self.qtHandler.HandleQuestion(
-					msgEntry,
-					senderAddr,
-					newRecStack,
-				)
+		isMatched = self._MatchQuestion(msgEntry)
 
+		try:
+			resp = self.qtHandler.HandleQuestion(
+				msgEntry,
+				senderAddr,
+				newRecStack,
+			)
+
+			if isMatched:
 				self.QtAnsLogger.debug(
 					f'Question, {msgEntry}, received answer, {resp}'
 				)
 
-				return resp
-			except Exception as e:
+			return resp
+		except Exception as e:
+			if isMatched:
 				self.QtAnsLogger.debug(
 					f'Question, {msgEntry}, got exception, {e}',
 					exc_info=True
