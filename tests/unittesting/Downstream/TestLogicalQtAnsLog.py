@@ -116,6 +116,19 @@ class TestLogicalQtAnsLog(unittest.TestCase):
 		addr3 = ans3[0].GetAddresses()
 		self.assertIn('8.8.8.8', [ str(x) for x in addr1 ])
 
+		# query for dns.google HTTPS
+		question4 = QuestionEntry(
+			name=dns.name.from_text('dns.google'),
+			rdCls=dns.rdataclass.IN,
+			rdType=dns.rdatatype.HTTPS,
+		)
+		with self.assertRaises(Exception):
+			logHandler.HandleQuestion(
+				msgEntry=question4,
+				senderAddr=('localhost', 0),
+				recDepthStack=[],
+			)
+
 		# make sure there are content in the log file
 		self.assertTrue(os.path.exists(self.logFilename))
 		self.LogLogFileContent(expectContent=True)

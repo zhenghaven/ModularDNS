@@ -17,6 +17,7 @@ import dns.rcode
 
 from ..Downstream.Handler import DownstreamHandler
 from ..Exceptions import(
+	DNSException,
 	DNSNameNotFoundError,
 	DNSZeroAnswerError,
 	DNSRequestRefusedError,
@@ -54,7 +55,11 @@ def CommonDNSMsgHandling(
 		return respMsg
 	except Exception as e:
 		# other server side error
-		logger.debug(
+		logFunc = logger.debug \
+			if isinstance(e, DNSException) else \
+				logger.exception
+
+		logFunc(
 			f'The query {QuestionEntry.QuestionEntry.FromRRSetList(dnsMsg.question)} failed with error {e}'
 		)
 		respMsg = dns.message.make_response(dnsMsg)
