@@ -17,6 +17,13 @@ dependencies = [
 [project.urls]
 Repository = "https://github.com/zhenghaven/ModularDNS"
 
+[tool.setuptools.packages.find]
+exclude = [
+	'setup.py',
+	'run_unittest.py',
+	'test*',
+]
+
 [project.entry-points.'console_scripts']
 ModularDNS = 'ModularDNS.__main__:main'
 
