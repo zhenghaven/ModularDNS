@@ -12,6 +12,7 @@ from ...ModuleManager import ModuleManager
 
 from .Failover import Failover
 from .LimitConcurrentReq import LimitConcurrentReq
+from .QtAnsLog import QtAnsLog
 from .QuestionRuleSet import QuestionRuleSet
 from .RaiseExcept import RaiseExcept
 from .RandomChoice import RandomChoice
@@ -20,6 +21,7 @@ from .RandomChoice import RandomChoice
 MODULE_MGR = ModuleManager()
 MODULE_MGR.RegisterModule('Failover', Failover)
 MODULE_MGR.RegisterModule('LimitConcurrentReq', LimitConcurrentReq)
+MODULE_MGR.RegisterModule('QtAnsLog', QtAnsLog)
 MODULE_MGR.RegisterModule('QuestionRuleSet', QuestionRuleSet)
 MODULE_MGR.RegisterModule('RaiseExcept', RaiseExcept)
 MODULE_MGR.RegisterModule('RandomChoice', RandomChoice)
