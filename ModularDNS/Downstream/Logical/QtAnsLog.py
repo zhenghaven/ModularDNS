@@ -81,11 +81,15 @@ class QtAnsLog(QuickLookup):
 
 		self.qtNameRegex = re.compile(self.qtNameRegexExpr)
 
-		self.QtAnsLogger = logging.getLogger(self.loggerName)
-		self.QtAnsLogger.propagate = True if logOnRoot else False
+		self.loggerLevel = logging.DEBUG
+
 		self.logHandler = logging.FileHandler(self.logPath, mode=self.logMode)
 		self.logHandler.setFormatter(logging.Formatter(fmt=Logger.DEFAULT_FMT))
-		self.logHandler.setLevel(logging.DEBUG)
+		self.logHandler.setLevel(self.loggerLevel)
+
+		self.QtAnsLogger = logging.getLogger(self.loggerName)
+		self.QtAnsLogger.propagate = True if logOnRoot else False
+		self.QtAnsLogger.setLevel(self.loggerLevel)
 		self.QtAnsLogger.addHandler(self.logHandler)
 
 	def _MatchQtCls(self, qtCls: dns.rdataclass.RdataClass) -> bool:
