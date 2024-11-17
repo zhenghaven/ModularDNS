@@ -42,6 +42,11 @@ class DNSServerFaultError(DNSException):
 		super(DNSServerFaultError, self).__init__(reason)
 
 
+class ServerNetworkError(DNSServerFaultError):
+	def __init__(self, reason: str) -> None:
+		super(ServerNetworkError, self).__init__(reason)
+
+
 EXCEPTION_MAP = {
 	DNSException.__name__:           DNSException,
 	DNSNameNotFoundError.__name__:   DNSNameNotFoundError,

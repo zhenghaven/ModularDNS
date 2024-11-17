@@ -21,6 +21,7 @@ from ..Exceptions import(
 	DNSNameNotFoundError,
 	DNSZeroAnswerError,
 	DNSRequestRefusedError,
+	ServerNetworkError,
 )
 from ..MsgEntry import QuestionEntry
 
@@ -52,6 +53,16 @@ def CommonDNSMsgHandling(
 	except DNSZeroAnswerError:
 		# the domain exists, but the query has no corresponding answers
 		respMsg = dns.message.make_response(dnsMsg)
+		return respMsg
+	except ServerNetworkError as e:
+		# there is some network issue on the server side
+		# which may be normal (e.g., server's internet connection is down)
+		# so we resp with SERVFAIL, and log the error as debug
+		logger.debug(
+			f'The query {QuestionEntry.QuestionEntry.FromRRSetList(dnsMsg.question)} failed with error {e}'
+		)
+		respMsg = dns.message.make_response(dnsMsg)
+		respMsg.set_rcode(dns.rcode.SERVFAIL)
 		return respMsg
 	except Exception as e:
 		# other server side error

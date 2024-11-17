@@ -15,6 +15,7 @@ from typing import List, Tuple
 import dns.message
 import dns.query
 
+from ...Exceptions import ServerNetworkError
 from ...MsgEntry import AnsEntry, MsgEntry, QuestionEntry
 from ..DownstreamCollection import DownstreamCollection
 from ..Utils import CommonDNSRespHandling
@@ -59,13 +60,18 @@ class UDPProtocol(Protocol):
 			raise ValueError(f'Unsupported IP version: {ip.version}')
 		sock = self.sock[ip.version]
 
-		resp = dns.query.udp(
-			q=q,
-			where=str(ip),
-			port=port,
-			timeout=self.timeout,
-			sock=sock,
-		)
+		try:
+			resp = dns.query.udp(
+				q=q,
+				where=str(ip),
+				port=port,
+				timeout=self.timeout,
+				sock=sock,
+			)
+		except (
+			dns.query.BadResponse,
+		) as e:
+			raise ServerNetworkError(str(e))
 
 		return (
 			resp,
