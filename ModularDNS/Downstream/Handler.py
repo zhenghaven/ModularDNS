@@ -51,6 +51,9 @@ class DownstreamHandler(object):
 		self._clsName = f'{__name__}.{self.__class__.__name__}'
 		self.logger = logging.getLogger(self._clsName)
 
+	def GetTrueClassName(self) -> str:
+		return self._clsName
+
 	def CheckRecursionDepth(
 		self,
 		givenStack: List[ Tuple[ int, str ] ],

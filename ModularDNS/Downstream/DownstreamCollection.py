@@ -31,6 +31,9 @@ class StaticSharedHandler(DownstreamHandler):
 
 		self.handler = handler
 
+	def GetTrueClassName(self) -> str:
+		return self.handler.GetTrueClassName()
+
 	def Handle(
 		self,
 		dnsMsg: dns.message.Message,
@@ -60,6 +63,9 @@ class StaticSharedQuickLookup(QuickLookup):
 		super(StaticSharedQuickLookup, self).__init__()
 
 		self.handler = handler
+
+	def GetTrueClassName(self) -> str:
+		return self.handler.GetTrueClassName()
 
 	def HandleQuestion(
 		self,

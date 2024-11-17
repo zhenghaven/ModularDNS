@@ -14,7 +14,9 @@ from typing import List, Tuple
 
 import dns.message
 import requests
+import requests.exceptions
 
+from ...Exceptions import ServerNetworkError
 from ...MsgEntry import AnsEntry, MsgEntry, QuestionEntry
 from ..DownstreamCollection import DownstreamCollection
 from ..Utils import CommonDNSRespHandling
@@ -54,15 +56,23 @@ class HTTPSProtocol(Protocol):
 			port = self.endpoint.port
 			hostname = self.endpoint.GetHostName()
 
-			resp = self.session.get(
-				f'https://{ipAddr}:{port}/dns-query',
-				headers={
-					'Host': hostname,
-				},
-				params=params,
-				timeout=self.timeout,
-				verify=True,
-			)
+			try:
+				resp = self.session.get(
+					f'https://{ipAddr}:{port}/dns-query',
+					headers={
+						'Host': hostname,
+					},
+					params=params,
+					timeout=self.timeout,
+					verify=True,
+				)
+			except (
+				requests.exceptions.ConnectTimeout,
+				requests.exceptions.ReadTimeout,
+				requests.exceptions.ConnectionError,
+			) as e:
+				raise ServerNetworkError(str(e))
+
 			resp.raise_for_status()
 
 			return (

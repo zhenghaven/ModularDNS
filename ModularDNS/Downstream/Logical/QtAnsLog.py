@@ -146,7 +146,7 @@ class QtAnsLog(QuickLookup):
 					f'Question, {msgEntry}, got exception, {e}',
 					exc_info=True
 				)
-				raise
+			raise
 
 	def Terminate(self) -> None:
 		self.qtHandler.Terminate()

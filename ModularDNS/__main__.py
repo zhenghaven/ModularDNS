@@ -10,18 +10,50 @@
 
 import argparse
 
-from . import PACKAGE_INFO
 from .Service import Resolver
 
 
+def GetPackageInfo() -> dict:
+	import os
+
+	thisDir = os.path.dirname(os.path.abspath(__file__))
+	possibleRepoDir = os.path.dirname(thisDir)
+	possibleTomlPath = os.path.join(possibleRepoDir, 'pyproject.toml')
+
+	pkgInfo = {
+		'name': __package__ or __name__,
+	}
+
+	if os.path.exists(possibleTomlPath):
+		import tomllib
+		with open(possibleTomlPath, 'rb') as file:
+			tomlData = tomllib.load(file)
+		if (
+			('project' in tomlData) and
+			('name' in tomlData['project']) and
+			(tomlData['project']['name'] == pkgInfo['name'])
+		):
+			pkgInfo['description'] = tomlData['project']['description']
+			pkgInfo['version'] = tomlData['project']['version']
+			return pkgInfo
+
+	import importlib
+	pkgInfo['version'] = importlib.metadata.version(pkgInfo['name'])
+	pkgInfo['description'] = importlib.metadata.metadata(pkgInfo['name'])['Summary']
+	return pkgInfo
+
+
+
 def main() -> None:
+	pkgInfo = GetPackageInfo()
+
 	argParser = argparse.ArgumentParser(
-		description=PACKAGE_INFO['description'],
+		description=pkgInfo['description'],
 		prog='',
 	)
 	argParser.add_argument(
 		'--version',
-		action='version', version=PACKAGE_INFO['version'],
+		action='version', version=pkgInfo['version'],
 	)
 	opArgParser = argParser.add_subparsers(
 		title='Services',

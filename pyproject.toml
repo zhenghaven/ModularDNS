@@ -1,0 +1,29 @@
+[project]
+name            = "ModularDNS"
+version         = "0.3.0"
+authors         = [
+	{ name = "Haofan Zheng" },
+]
+description     = "A highly flexible DNS resolving service"
+readme          = "README.md"
+license         = {file = "LICENSE"}
+requires-python = ">=3.9"
+dependencies = [
+	'dnspython>=2.6.0,<3.0.0',
+	'requests>=2.32.0,<3.0.0',
+	'CacheLib @ git+https://github.com/zhenghaven/PyCacheLib.git@v0.2.0'
+]
+
+[project.urls]
+Repository = "https://github.com/zhenghaven/ModularDNS"
+
+[tool.setuptools.packages.find]
+exclude = [
+	'setup.py',
+	'run_unittest.py',
+	'test*',
+]
+
+[project.entry-points.'console_scripts']
+ModularDNS = 'ModularDNS.__main__:main'
+

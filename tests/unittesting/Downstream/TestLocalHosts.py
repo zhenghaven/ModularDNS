@@ -20,7 +20,8 @@ import dns.rdataclass
 import dns.rdatatype
 
 from ModularDNS.Downstream.Local.Hosts import Hosts
-from ModularDNS.Exceptions import DNSNameNotFoundError
+from ModularDNS.Exceptions import DNSNameNotFoundError, DNSZeroAnswerError
+from ModularDNS.MsgEntry.QuestionEntry import QuestionEntry
 
 
 TESTING_HOSTS_CONFIG = {
@@ -173,6 +174,19 @@ class TestLocalHosts(unittest.TestCase):
 		# Domain doesn't exist, prefer IPv6
 		with self.assertRaises(DNSNameNotFoundError):
 			hosts.LookupIpAddr(domain='not.exist', preferIPv6=True, recDepthStack=[])
+
+		# no answer for an unknown type
+		questionHttps = QuestionEntry(
+			name=dns.name.from_text('dns.google'),
+			rdCls=dns.rdataclass.IN,
+			rdType=dns.rdatatype.HTTPS,
+		)
+		with self.assertRaises(DNSZeroAnswerError):
+			hosts.HandleQuestion(
+				msgEntry=questionHttps,
+				senderAddr=('localhost', 0),
+				recDepthStack=[],
+			)
 
 	def test_Downstream_Local_Hosts_04CNameWithDot(self):
 		hosts = BuildTestingHosts()

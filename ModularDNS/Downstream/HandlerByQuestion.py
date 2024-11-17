@@ -46,11 +46,18 @@ class HandlerByQuestion(DownstreamHandler):
 
 		respEntries = []
 		for q in questionList:
-			respEntries += self.HandleQuestion(
+			resp = self.HandleQuestion(
 				msgEntry=q,
 				senderAddr=senderAddr,
 				recDepthStack=newRecStack
 			)
+
+			if resp is None:
+				raise ValueError(
+					f'{self.GetTrueClassName()}.HandleQuestion() returned None'
+				)
+
+			respEntries += resp
 
 		respMsg = dns.message.make_response(dnsMsg)
 		MsgEntry.ConcatDNSMsg(respMsg, respEntries)
