@@ -14,7 +14,7 @@ import socketserver
 import threading
 import uuid
 
-from typing import Tuple, Type
+from typing import Any, Dict, Tuple, Type
 
 from ..Downstream.Handler import DownstreamHandler
 from .PySocketServer import MitigateServeAndShutdown
@@ -24,18 +24,24 @@ class Server:
 
 	def ServerInit(
 		self,
-		serverUUID: uuid.UUID,
-		terminateEvent: threading.Event,
+		addData: Dict[str, Any] = {},
 	) -> None:
 
-		self._instName = f'{__name__}.{self.__class__.__name__}.{serverUUID.hex[:8]}'
-		self._logger = logging.getLogger(self._instName)
-
-		self.serverUUID = serverUUID
-		self.terminateEvent = terminateEvent
+		self.serverUUID = uuid.uuid4()
+		self.terminateEvent = threading.Event()
 
 		self.stateLock = threading.Lock()
 		self.hasServeThreadStarted = False
+
+		self._instName = f'{__name__}.{self.__class__.__name__}.{self.serverUUID.hex[:8]}'
+		self._logger = logging.getLogger(self._instName)
+
+		self.handlerName = self.RequestHandlerClass.__name__
+		self.handlerLoggerName = f'{self._instName}.{self.handlerName}'
+		self.handlerLogger = logging.getLogger(self.handlerLoggerName)
+
+		for addDataKey, addDataVal in addData.items():
+			setattr(self, addDataKey, addDataVal)
 
 	def _ServeForever(self) -> None:
 		raise NotImplemented(
@@ -137,27 +143,10 @@ def CreateServer(
 	else:
 		raise ValueError(f'Unsupported IP version: {serverIPVer}')
 
-	serverUUID = uuid.uuid4()
-	terminateEvent = threading.Event()
-
-	handlerName = \
-		f'{handlerType.__name__}_D{downstreamHdlr.instUUIDhex[:8]}_S{serverUUID.hex[:8]}'
-	loggerName = f'{__name__}.{handlerName}'
-
-	logger = logging.getLogger(loggerName)
-
-	derivedHandlerType = type(
-		handlerName,
-		(handlerType, ),
-		{
-			'DOWNSTREAM_HANDLER': downstreamHdlr,
-			'LOGGER': logger,
-			'IS_TERMINATED': terminateEvent,
-		}
-	)
-
-	serverInst = serverType(server_address, derivedHandlerType)
-	serverInst.ServerInit(serverUUID, terminateEvent)
+	serverInst = serverType(server_address, handlerType)
+	serverInst.ServerInit({
+		'downstreamHandler': downstreamHdlr,
+	})
 
 	return serverInst
 

@@ -29,9 +29,7 @@ from .Utils import CommonDNSMsgHandling
 
 class UDPHandler(socketserver.DatagramRequestHandler):
 
-	DOWNSTREAM_HANDLER: DownstreamHandler
-	LOGGER: logging.Logger
-	IS_TERMINATED: threading.Event
+	server: Server
 
 	def handle(self):
 		sender = self.client_address
@@ -40,15 +38,17 @@ class UDPHandler(socketserver.DatagramRequestHandler):
 		try:
 			dnsMsg = dns.message.from_wire(rawData)
 		except Exception as e:
-			self.LOGGER.debug(f'Failed to parse DNS message with error {e}')
+			self.server.handlerLogger.debug(
+				f'Failed to parse DNS message with error {e}'
+			)
 			# the DNS message received is invalid, ignore it
 			return
 
 		dnsResp = CommonDNSMsgHandling(
 			dnsMsg=dnsMsg,
 			senderAddr=sender,
-			downstreamHdlr=self.DOWNSTREAM_HANDLER,
-			logger=self.LOGGER,
+			downstreamHdlr=self.server.downstreamHandler,
+			logger=self.server.handlerLogger,
 		)
 		rawResp = dnsResp.to_wire()
 		self.wfile.write(rawResp)
