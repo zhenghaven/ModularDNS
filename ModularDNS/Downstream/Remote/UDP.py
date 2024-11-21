@@ -12,6 +12,7 @@ import socket
 
 from typing import List, Tuple
 
+import dns.exception
 import dns.message
 import dns.query
 
@@ -70,6 +71,7 @@ class UDPProtocol(Protocol):
 			)
 		except (
 			dns.query.BadResponse,
+			dns.exception.Timeout,
 		) as e:
 			raise ServerNetworkError(str(e))
 
