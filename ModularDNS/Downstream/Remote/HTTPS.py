@@ -116,34 +116,3 @@ class HTTPS(Remote):
 			timeout=timeout
 		)
 
-	def HandleQuestion(
-		self,
-		msgEntry: QuestionEntry.QuestionEntry,
-		senderAddr: Tuple[str, int],
-		recDepthStack: List[ Tuple[ int, str ] ],
-	) -> List[ MsgEntry.MsgEntry ]:
-		newRecStack = self.CheckRecursionDepth(
-			recDepthStack,
-			self.HandleQuestion
-		)
-
-		dnsQuery = msgEntry.MakeQuery()
-
-		dnsResp, remote = self.underlying.Query(
-			q=dnsQuery,
-			recDepthStack=newRecStack
-		)
-
-		dnsResp = CommonDNSRespHandling(
-			dnsResp,
-			remote=remote,
-			queryName=msgEntry.GetNameStr(),
-			logger=self.logger
-		)
-		ansEntries = AnsEntry.AnsEntry.FromRRSetList(dnsResp.answer)
-
-		return ansEntries
-
-	def Terminate(self) -> None:
-		self.underlying.Terminate()
-

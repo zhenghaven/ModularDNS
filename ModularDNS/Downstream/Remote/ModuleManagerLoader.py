@@ -13,6 +13,7 @@ from ...ModuleManager import ModuleManager
 from .ByProtocol import ByProtocol
 from .Endpoint import Endpoint, StaticEndpoint
 from .HTTPS import HTTPS
+from .TCP import TCP
 from .UDP import UDP
 
 
@@ -21,5 +22,6 @@ MODULE_MGR.RegisterModule('ByProtocol', ByProtocol)
 MODULE_MGR.RegisterModule('Endpoint', Endpoint)
 MODULE_MGR.RegisterModule('StaticEndpoint', StaticEndpoint)
 MODULE_MGR.RegisterModule('HTTPS', HTTPS)
+MODULE_MGR.RegisterModule('TCP', TCP)
 MODULE_MGR.RegisterModule('UDP', UDP)
 

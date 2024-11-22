@@ -34,27 +34,6 @@ class UDPProtocol(Protocol):
 	WARNING: This class is not thread-safe
 	'''
 
-	_IP_VER_MAP = {
-		4: socket.AF_INET,
-		6: socket.AF_INET6,
-	}
-
-	@classmethod
-	def _CreateSocket(cls, af: int, sockType: int) -> socket.socket:
-		sock = socket.socket(af, sockType)
-		sock.setblocking(False)
-		return sock
-
-	@classmethod
-	def _SocketShutdown(cls, sock: socket.socket) -> None:
-		try:
-			sock.shutdown(socket.SHUT_RDWR)
-		except:
-			# it may raise an exception if the socket is not connected
-			# but we can safely ignore it
-			pass
-		sock.close()
-
 	def __init__(self, endpoint: Endpoint, timeout: float) -> None:
 		super(UDPProtocol, self).__init__(
 			endpoint=endpoint,
@@ -67,16 +46,19 @@ class UDPProtocol(Protocol):
 		self.CreateSocket()
 
 	def CreateSocket(self) -> None:
-		for ver, af in self._IP_VER_MAP.items():
-			self.sock[ver] = self._CreateSocket(af, socket.SOCK_DGRAM)
+		for ver, af in self.IP_VER_TO_AF_MAP.items():
+			self.sock[ver] = self.SysSocketCreate(
+				af,
+				socket.SOCK_DGRAM,
+				timeout=None,
+			)
 
 	def DestroySocket(self) -> None:
 		for sock in self.sock.values():
-			self._SocketShutdown(sock)
+			self.SysSocketShutdown(sock)
 
 	def ResetSocket(self) -> None:
-		for sock in self.sock.values():
-			self._SocketShutdown(sock)
+		self.DestroySocket()
 		self.CreateSocket()
 
 	def Query(
@@ -148,35 +130,4 @@ class UDP(Remote):
 			endpoint=endpoint,
 			timeout=timeout
 		)
-
-	def HandleQuestion(
-		self,
-		msgEntry: QuestionEntry.QuestionEntry,
-		senderAddr: Tuple[str, int],
-		recDepthStack: List[ Tuple[ int, str ] ],
-	) -> List[ MsgEntry.MsgEntry ]:
-		newRecStack = self.CheckRecursionDepth(
-			recDepthStack,
-			self.HandleQuestion
-		)
-
-		dnsQuery = msgEntry.MakeQuery()
-
-		dnsResp, remote = self.underlying.Query(
-			q=dnsQuery,
-			recDepthStack=newRecStack
-		)
-
-		dnsResp = CommonDNSRespHandling(
-			dnsResp,
-			remote=remote,
-			queryName=msgEntry.GetNameStr(),
-			logger=self.logger
-		)
-		ansEntries = AnsEntry.AnsEntry.FromRRSetList(dnsResp.answer)
-
-		return ansEntries
-
-	def Terminate(self) -> None:
-		self.underlying.Terminate()
 
