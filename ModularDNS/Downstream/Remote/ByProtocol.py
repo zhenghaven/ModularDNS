@@ -13,11 +13,14 @@ from ..DownstreamCollection import DownstreamCollection
 from .Remote import DEFAULT_TIMEOUT
 
 from .HTTPS import HTTPS
+from .Remote import Remote
+from .TCP import TCP
 from .UDP import UDP
 
 
 REMOTE_HANDLER_MAP = {
 	'https': HTTPS,
+	'tcp': TCP,
 	'udp': UDP,
 }
 
@@ -30,7 +33,7 @@ class ByProtocol:
 		dCollection: DownstreamCollection,
 		endpoint: str,
 		timeout: float = DEFAULT_TIMEOUT,
-	) -> 'HTTPS':
+	) -> Remote:
 		endpointObj = dCollection.GetEndpoint(endpoint)
 		proto = endpointObj.proto
 

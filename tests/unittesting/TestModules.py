@@ -28,12 +28,15 @@ from .Downstream.TestLogicalRandomChoice import TestLogicalRandomChoice
 from .Downstream.TestRemoteEndpoint import TestRemoteEndpoint
 from .Downstream.TestRemoteHTTPS import TestRemoteHTTPS
 from .Downstream.TestRemoteHTTPSAdapters import TestRemoteHTTPSAdapters
+from .Downstream.TestRemoteTCP import TestRemoteTCP
 from .Downstream.TestRemoteUDP import TestRemoteUDP
 
+from .MsgEntry.TestAddEntry import TestAddEntry
 from .MsgEntry.TestAnsEntry import TestAnsEntry
 from .MsgEntry.TestQuestionEntry import TestQuestionEntry
 
 from .Server.TestUtils import TestUtils
+from .Server.TestTCP import TestTCP
 from .Server.TestUDP import TestUDP
 from .Server.TestServerCollection import TestServerCollection
 

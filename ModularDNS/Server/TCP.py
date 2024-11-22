@@ -8,6 +8,7 @@
 ###
 
 
+import selectors
 import socket
 import socketserver
 
@@ -15,6 +16,7 @@ from typing import Tuple
 
 import dns.message
 
+from ..Exceptions import ServerNetworkError
 from ..Downstream.Handler import DownstreamHandler
 from ..Downstream.DownstreamCollection import DownstreamCollection
 from .Server import (
@@ -25,13 +27,27 @@ from .Server import (
 from .Utils import CommonDNSMsgHandling
 
 
-class UDPHandler(socketserver.DatagramRequestHandler):
+class TCPHandler(socketserver.StreamRequestHandler):
 
 	server: Server
 
-	def handle(self):
+	def ReadBytes(self, numBytes: int) -> bytes:
+		res = b''
+		while len(res) < numBytes:
+			bytesLeft = numBytes - len(res)
+			inBytes = self.rfile.read(bytesLeft)
+			if len(inBytes) == 0:
+				raise ServerNetworkError('Client disconnected')
+			else:
+				res += inBytes
+		return res
+
+	def ProcessOneRequest(self) -> None:
 		sender = self.client_address
-		rawData = self.rfile.read()
+
+		lenBytes = self.ReadBytes(2)
+		msgLen = int.from_bytes(lenBytes, byteorder='big')
+		rawData = self.ReadBytes(msgLen)
 
 		try:
 			dnsMsg = dns.message.from_wire(rawData)
@@ -49,19 +65,46 @@ class UDPHandler(socketserver.DatagramRequestHandler):
 			logger=self.server.handlerLogger,
 		)
 		rawResp = dnsResp.to_wire()
+		rawRespLenBytes = len(rawResp).to_bytes(2, byteorder='big')
+		self.wfile.write(rawRespLenBytes)
 		self.wfile.write(rawResp)
 
+	def handle(self):
+		pollInterval = 0.5
+
+		# set socket to no-delay mode
+		self.request.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
+
+		with selectors.DefaultSelector() as selector:
+			selector.register(self.rfile, selectors.EVENT_READ)
+
+			try:
+				while not self.server.terminateEvent.is_set():
+					for key, events in selector.select(pollInterval):
+						if key.fileobj == self.rfile:
+							self.ProcessOneRequest()
+						else:
+							self.server.handlerLogger.error(
+								'Unknown file object in selector'
+							)
+			except Exception as e:
+				self.server.handlerLogger.debug(
+					f'Handler failed with error {e}'
+				)
+				pass
+
 
 @FromPySocketServer
-class UDPServerV4(socketserver.ThreadingUDPServer):
+class TCPServerV4(socketserver.ThreadingTCPServer):
 	address_family = socket.AF_INET
 
+
 @FromPySocketServer
-class UDPServerV6(socketserver.ThreadingUDPServer):
+class TCPServerV6(socketserver.ThreadingTCPServer):
 	address_family = socket.AF_INET6
 
 
-class UDP:
+class TCP:
 
 	@classmethod
 	def CreateServer(
@@ -73,9 +116,9 @@ class UDP:
 		return _CreateServerFromPySocketServer(
 			server_address=server_address,
 			downstreamHdlr=downstreamHdlr,
-			handlerType=UDPHandler,
-			serverV4Type=UDPServerV4,
-			serverV6Type=UDPServerV6,
+			handlerType=TCPHandler,
+			serverV4Type=TCPServerV4,
+			serverV6Type=TCPServerV6,
 		)
 
 	@classmethod

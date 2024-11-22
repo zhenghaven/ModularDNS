@@ -25,8 +25,10 @@ from ModularDNS.Downstream.Logical.RandomChoice import RandomChoice
 from ModularDNS.Downstream.Remote.ByProtocol import ByProtocol
 from ModularDNS.Downstream.Remote.Endpoint import Endpoint, StaticEndpoint
 from ModularDNS.Downstream.Remote.HTTPS import HTTPS
+from ModularDNS.Downstream.Remote.TCP import TCP
 from ModularDNS.Downstream.Remote.UDP import UDP
 
+from ModularDNS.Server.TCP import TCP as TCPServer
 from ModularDNS.Server.UDP import UDP as UDPServer
 
 
@@ -51,7 +53,9 @@ class TestModuleManagerLoaders(unittest.TestCase):
 		self.assertEqual(MODULE_MGR.GetModule('Downstream.Remote.Endpoint'), Endpoint)
 		self.assertEqual(MODULE_MGR.GetModule('Downstream.Remote.StaticEndpoint'), StaticEndpoint)
 		self.assertEqual(MODULE_MGR.GetModule('Downstream.Remote.HTTPS'), HTTPS)
+		self.assertEqual(MODULE_MGR.GetModule('Downstream.Remote.TCP'), TCP)
 		self.assertEqual(MODULE_MGR.GetModule('Downstream.Remote.UDP'), UDP)
+		self.assertEqual(MODULE_MGR.GetModule('Server.TCP'), TCPServer)
 		self.assertEqual(MODULE_MGR.GetModule('Server.UDP'), UDPServer)
 
 		self.assertTrue(
@@ -121,6 +125,12 @@ class TestModuleManagerLoaders(unittest.TestCase):
 		self.assertTrue(
 			issubclass(
 				MODULE_MGR.GetModule('Downstream.Remote.HTTPS'),
+				DownstreamHandler
+			)
+		)
+		self.assertTrue(
+			issubclass(
+				MODULE_MGR.GetModule('Downstream.Remote.TCP'),
 				DownstreamHandler
 			)
 		)

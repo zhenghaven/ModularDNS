@@ -10,9 +10,11 @@
 
 from ..ModuleManager import ModuleManager
 
+from .TCP import TCP
 from .UDP import UDP
 
 
 MODULE_MGR = ModuleManager()
+MODULE_MGR.RegisterModule('TCP', TCP)
 MODULE_MGR.RegisterModule('UDP', UDP)
 
