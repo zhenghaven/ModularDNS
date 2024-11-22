@@ -39,6 +39,7 @@ class TestAddEntry(unittest.TestCase):
 		addEntry1 = AddEntry(
 			rawSet=testRRset1,
 		)
+		self.assertEqual(addEntry1.entryType, 'ADD')
 
 		testRRset2 = dns.rrset.from_text_list(
 			name='dns.google.com',
@@ -50,6 +51,7 @@ class TestAddEntry(unittest.TestCase):
 		addEntry2 = AddEntry(
 			rawSet=testRRset2,
 		)
+		self.assertEqual(addEntry2.entryType, 'ADD')
 
 		self.assertEqual(addEntry1, addEntry2)
 		self.assertEqual(hash(addEntry1), hash(addEntry2))

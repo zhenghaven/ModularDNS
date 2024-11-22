@@ -38,6 +38,7 @@ class TestAnsEntry(unittest.TestCase):
 				dns.rdata.from_text(dns.rdataclass.IN, dns.rdatatype.A, '8.8.4.4'),
 			],
 		)
+		self.assertEqual(ansEntry1.entryType, 'ANS')
 
 		ansEntry2 = AnsEntry(
 			name=dns.name.from_text('dns.google.com'),
@@ -49,6 +50,7 @@ class TestAnsEntry(unittest.TestCase):
 				dns.rdata.from_text(dns.rdataclass.IN, dns.rdatatype.A, '8.8.4.4'),
 			],
 		)
+		self.assertEqual(ansEntry2.entryType, 'ANS')
 
 		self.assertEqual(ansEntry1, ansEntry2)
 		self.assertEqual(hash(ansEntry1), hash(ansEntry2))

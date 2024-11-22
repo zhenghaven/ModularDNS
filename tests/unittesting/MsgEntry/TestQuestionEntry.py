@@ -32,12 +32,14 @@ class TestQuestionEntry(unittest.TestCase):
 			rdCls=dns.rdataclass.IN,
 			rdType=dns.rdatatype.A,
 		)
+		self.assertEqual(questionEntry1.entryType, 'QUEST')
 
 		questionEntry2 = QuestionEntry(
 			name=dns.name.from_text('google.com'),
 			rdCls=dns.rdataclass.IN,
 			rdType=dns.rdatatype.A,
 		)
+		self.assertEqual(questionEntry2.entryType, 'QUEST')
 
 		self.assertEqual(questionEntry1, questionEntry2)
 		self.assertEqual(hash(questionEntry1), hash(questionEntry2))
