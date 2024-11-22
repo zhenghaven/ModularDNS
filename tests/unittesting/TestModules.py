@@ -31,6 +31,7 @@ from .Downstream.TestRemoteHTTPSAdapters import TestRemoteHTTPSAdapters
 from .Downstream.TestRemoteTCP import TestRemoteTCP
 from .Downstream.TestRemoteUDP import TestRemoteUDP
 
+from .MsgEntry.TestAddEntry import TestAddEntry
 from .MsgEntry.TestAnsEntry import TestAnsEntry
 from .MsgEntry.TestQuestionEntry import TestQuestionEntry
 

@@ -10,7 +10,7 @@
 
 from typing import List, Tuple
 
-from ...MsgEntry import AnsEntry, MsgEntry, QuestionEntry
+from ...MsgEntry import AddEntry, AnsEntry, MsgEntry, QuestionEntry
 from ..QuickLookup import QuickLookup
 from ..Utils import CommonDNSRespHandling
 from .Protocol import Protocol
@@ -52,7 +52,9 @@ class Remote(QuickLookup):
 			queryName=msgEntry.GetNameStr(),
 			logger=self.logger
 		)
-		ansEntries = AnsEntry.AnsEntry.FromRRSetList(dnsResp.answer)
+		ansEntries = []
+		ansEntries += AnsEntry.AnsEntry.FromRRSetList(dnsResp.answer)
+		ansEntries += AddEntry.AddEntry.FromRRSetList(dnsResp.additional)
 
 		return ansEntries
 
