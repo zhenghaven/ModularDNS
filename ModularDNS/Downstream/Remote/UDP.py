@@ -9,6 +9,7 @@
 
 
 import socket
+import threading
 
 from typing import List, Tuple
 
@@ -20,12 +21,18 @@ from ...Exceptions import ServerNetworkError
 from ...MsgEntry import AnsEntry, MsgEntry, QuestionEntry
 from ..DownstreamCollection import DownstreamCollection
 from ..Utils import CommonDNSRespHandling
+from .ConcurrentMgr import ConcurrentMgr
 from .Endpoint import Endpoint
 from .Protocol import Protocol, _REMOTE_INFO
 from .Remote import DEFAULT_TIMEOUT, Remote
 
 
 class UDPProtocol(Protocol):
+
+	'''
+	Implementation of DNS-over-UDP protocol
+	WARNING: This class is not thread-safe
+	'''
 
 	_IP_VER_MAP = {
 		4: socket.AF_INET,
@@ -38,16 +45,39 @@ class UDPProtocol(Protocol):
 		sock.setblocking(False)
 		return sock
 
+	@classmethod
+	def _SocketShutdown(cls, sock: socket.socket) -> None:
+		try:
+			sock.shutdown(socket.SHUT_RDWR)
+		except:
+			# it may raise an exception if the socket is not connected
+			# but we can safely ignore it
+			pass
+		sock.close()
+
 	def __init__(self, endpoint: Endpoint, timeout: float) -> None:
 		super(UDPProtocol, self).__init__(
 			endpoint=endpoint,
 			timeout=timeout
 		)
 
-		self.sock = {
-			ver: self._CreateSocket(af, socket.SOCK_DGRAM)
-			for ver, af in self._IP_VER_MAP.items()
-		}
+		self.isTerminated = threading.Event()
+
+		self.sock = {}
+		self.CreateSocket()
+
+	def CreateSocket(self) -> None:
+		for ver, af in self._IP_VER_MAP.items():
+			self.sock[ver] = self._CreateSocket(af, socket.SOCK_DGRAM)
+
+	def DestroySocket(self) -> None:
+		for sock in self.sock.values():
+			self._SocketShutdown(sock)
+
+	def ResetSocket(self) -> None:
+		for sock in self.sock.values():
+			self._SocketShutdown(sock)
+		self.CreateSocket()
 
 	def Query(
 		self,
@@ -70,30 +100,27 @@ class UDPProtocol(Protocol):
 				sock=sock,
 			)
 		except (
-			dns.query.BadResponse,
 			dns.exception.Timeout,
 		) as e:
 			raise ServerNetworkError(str(e))
+		finally:
+			if not self.isTerminated.is_set():
+				self.ResetSocket()
 
 		return (
 			resp,
 			(self.endpoint.GetHostName(), str(ip), port)
 		)
 
-	@classmethod
-	def _SocketShutdown(cls, sock: socket.socket) -> None:
-		try:
-			sock.shutdown(socket.SHUT_RDWR)
-		except:
-			# it may raise an exception if the socket is not connected
-			# but we can safely ignore it
-			pass
-		sock.close()
-
 	def Terminate(self) -> None:
 		super(UDPProtocol, self)._Terminate()
-		for sock in self.sock.values():
-			self._SocketShutdown(sock)
+		self.isTerminated.set()
+		self.DestroySocket()
+
+
+class ConcurrentUDP(ConcurrentMgr):
+
+	SESSION_CLASS: Protocol = UDPProtocol
 
 
 class UDP(Remote):
@@ -117,7 +144,7 @@ class UDP(Remote):
 	) -> None:
 		super(UDP, self).__init__(timeout=timeout)
 
-		self.underlying = UDPProtocol(
+		self.underlying = ConcurrentUDP(
 			endpoint=endpoint,
 			timeout=timeout
 		)
