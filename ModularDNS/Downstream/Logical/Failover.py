@@ -24,6 +24,7 @@ class Failover(QuickLookup):
 		_ModularDNSExceptions.DNSRequestRefusedError,
 		_ModularDNSExceptions.DNSServerFaultError,
 		_ModularDNSExceptions.DNSZeroAnswerError,
+		_ModularDNSExceptions.ServerNetworkError,
 	]
 
 	DEFAULT_EXCEPT_STR_LIST: List[str] = [

@@ -135,3 +135,32 @@ class TestLogicalQuestionRuleSet(unittest.TestCase):
 		)
 		self.assertIsInstance(ruleSet, QuestionRuleSet.QuestionRuleSet)
 
+	def test_Downstream_Logical_QuestionRuleSet_04RuleMatchingSamePriority(self):
+		hosts1 = BuildTestingHosts(cls=CountingHosts)
+		hosts2 = BuildTestingHosts(cls=CountingHosts)
+
+		ruleSet = QuestionRuleSet.QuestionRuleSet(
+			ruleAndHandlers={
+				'sub:->>google.com': hosts1,
+				'sub:->>.com': hosts2,
+			}
+		)
+
+		question1 = QuestionEntry(
+			name=dns.name.from_text('dns.google.com'),
+			rdCls=dns.rdataclass.IN,
+			rdType=dns.rdatatype.A,
+		)
+		matchedHandler = ruleSet.MatchHandler(question1)
+		# only the sub rule should match
+		self.assertEqual(matchedHandler, hosts1)
+
+		question2 = QuestionEntry(
+			name=dns.name.from_text('microsoft.com'),
+			rdCls=dns.rdataclass.IN,
+			rdType=dns.rdatatype.A,
+		)
+		matchedHandler = ruleSet.MatchHandler(question2)
+		# both rules should match, but the full rule should have higher priority
+		self.assertEqual(matchedHandler, hosts2)
+

@@ -53,6 +53,7 @@ EXCEPTION_MAP = {
 	DNSZeroAnswerError.__name__:     DNSZeroAnswerError,
 	DNSRequestRefusedError.__name__: DNSRequestRefusedError,
 	DNSServerFaultError.__name__:    DNSServerFaultError,
+	ServerNetworkError.__name__:     ServerNetworkError,
 }
 
 
