@@ -55,19 +55,28 @@ class QuestionRuleSet(QuickLookup):
 		msgEntry: QuestionEntry.QuestionEntry,
 	) -> HandlerByQuestion:
 		# match with all rules
-		q: List[Tuple[int, HandlerByQuestion]] = []
+		indexedHdlr: List[HandlerByQuestion] = []
+		heapHdlr: List[Tuple[int, int]] = []
 		for rule, handler in self.lut.items():
 			isMatch, weight = rule.Match(msgEntry)
 			if isMatch:
+				# we need to put index to the heap, since handlers are
+				# non-comparable
+				indexedHdlr.append(handler)
+				i = len(indexedHdlr) - 1
+
 				# `-weight` is used to make the heap a max-heap
-				heapq.heappush(q, (-weight, handler))
+				heapq.heappush(heapHdlr, (-weight, i))
 
 		# get the handler with the highest weight
-		if len(q) == 0:
+		if len(heapHdlr) == 0:
 			raise RuntimeError(
 				f'No handler found for question {msgEntry}'
 			)
-		_, handler = heapq.heappop(q)
+
+		# get the index of the handler with the highest weight
+		_, i = heapq.heappop(heapHdlr)
+		handler = indexedHdlr[i]
 
 		return handler
 
