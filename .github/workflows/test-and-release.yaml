@@ -12,7 +12,7 @@ jobs:
   create_tag:
     permissions:
       contents: write
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     strategy:
       fail-fast: false
       matrix:
@@ -62,3 +62,19 @@ jobs:
             ref: 'refs/tags/${{ steps.latest_ver.outputs.allV }}',
             sha: context.sha
           })
+
+    - name: Build wheel package
+      if: ${{ startsWith(github.ref, 'refs/heads/main') && steps.latest_ver.outputs.remote != steps.latest_ver.outputs.all }}
+      run: |
+        python3 -m venv ${{ github.workspace }}/.venv
+        ${{ github.workspace }}/.venv/bin/python3 -m pip install -U pip build
+        ${{ github.workspace }}/.venv/bin/python3 -m pip wheel ${{ github.workspace }} ${{ github.workspace }}/wheelhouse
+        tar -czvf ${{ github.workspace }}/wheelhouse.tar.gz -C ${{ github.workspace }}/wheelhouse
+
+    - name: Upload wheel package
+      if: ${{ startsWith(github.ref, 'refs/heads/main') && steps.latest_ver.outputs.remote != steps.latest_ver.outputs.all }}
+      uses: actions/upload-artifact@v4
+      with:
+        name: wheelhouse
+        path: ${{ github.workspace }}/wheelhouse.tar.gz
+
