@@ -10,6 +10,7 @@
 
 from ...ModuleManager import ModuleManager
 
+from .ConstAns import ConstAns
 from .Failover import Failover
 from .LimitConcurrentReq import LimitConcurrentReq
 from .QtAnsLog import QtAnsLog
@@ -19,6 +20,7 @@ from .RandomChoice import RandomChoice
 
 
 MODULE_MGR = ModuleManager()
+MODULE_MGR.RegisterModule('ConstAns', ConstAns)
 MODULE_MGR.RegisterModule('Failover', Failover)
 MODULE_MGR.RegisterModule('LimitConcurrentReq', LimitConcurrentReq)
 MODULE_MGR.RegisterModule('QtAnsLog', QtAnsLog)
