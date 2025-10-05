@@ -17,6 +17,7 @@ from .Downstream.TestStackDepth import TestStackDepth
 from .Downstream.TestLocalCache import TestLocalCache
 from .Downstream.TestLocalHosts import TestLocalHosts
 
+from .Downstream.TestLogicalConstAns import TestLogicalConstAns
 from .Downstream.TestLogicalFailover import TestLogicalFailover
 from .Downstream.TestLogicalLimitConcurrentReq import TestLogicalLimitConcurrentReq
 from .Downstream.TestLogicalQtAnsLog import TestLogicalQtAnsLog
