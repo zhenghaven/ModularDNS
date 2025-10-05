@@ -64,15 +64,13 @@ jobs:
           })
 
     - name: Build wheel package
-      if: ${{ startsWith(github.ref, 'refs/heads/main') && steps.latest_ver.outputs.remote != steps.latest_ver.outputs.all }}
       run: |
         python3 -m venv ${{ github.workspace }}/.venv
         ${{ github.workspace }}/.venv/bin/python3 -m pip install -U pip build
-        ${{ github.workspace }}/.venv/bin/python3 -m pip wheel ${{ github.workspace }} ${{ github.workspace }}/wheelhouse
-        tar -czvf ${{ github.workspace }}/wheelhouse.tar.gz -C ${{ github.workspace }}/wheelhouse
+        ${{ github.workspace }}/.venv/bin/python3 -m pip wheel --wheel-dir ${{ github.workspace }}/wheelhouse ${{ github.workspace }}
+        tar -czvf ${{ github.workspace }}/wheelhouse.tar.gz -C ${{ github.workspace }}/wheelhouse ${{ github.workspace }}/wheelhouse
 
     - name: Upload wheel package
-      if: ${{ startsWith(github.ref, 'refs/heads/main') && steps.latest_ver.outputs.remote != steps.latest_ver.outputs.all }}
       uses: actions/upload-artifact@v4
       with:
         name: wheelhouse
